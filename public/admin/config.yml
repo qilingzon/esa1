@@ -121,7 +121,7 @@ collections:
       - {label: "颜色", name: "color", widget: "string", required: false}
 
   # 时间线集合
-  - name: "timeline"
+  - name: "Aniv"
     label: "时间线"
     label_singular: "时间线"
     folder: "src/data/timeline"
