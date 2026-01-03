@@ -156,8 +156,8 @@
         filter: none !important;
         image-rendering: -webkit-optimize-contrast;
         image-rendering: crisp-edges;
-        /* 确保在内容后面但可见 */
-        z-index: 0 !important;
+        /* 确保在所有内容后面 */
+        z-index: -10 !important;
     }
     
     .mobile-fullscreen-wallpaper.show {

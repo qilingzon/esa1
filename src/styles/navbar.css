@@ -9,6 +9,15 @@
     #navbar-wrapper.navbar-hidden {
         opacity: 1 !important;
         transform: none !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+    }
+    
+    /* 确保导航栏容器也始终可见 */
+    #navbar-wrapper {
+        opacity: 1 !important;
+        transform: none !important;
+        visibility: visible !important;
     }
 }
 
