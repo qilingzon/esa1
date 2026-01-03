@@ -19,6 +19,29 @@
   <script>
     // Sveltia CMS 完整中文汉化
     const textMappings = {
+      // ===== 用户菜单 =====
+      'Signed In as': '已登录为',
+      'Signed in as': '已登录为',
+      'Live Site': '访问网站',
+      'Keyboard Shortcuts': '键盘快捷键',
+      'Keyboard shortcuts': '键盘快捷键',
+      
+      // ===== Beta 功能和开发者模式 =====
+      'Beta Features': '测试功能',
+      'Beta features': '测试功能',
+      'Enable some beta features that may be unstable or unlocalized.': '启用一些可能不稳定或未本地化的测试功能。',
+      'Enable some beta features that may be unstable or unlocalized': '启用一些可能不稳定或未本地化的测试功能',
+      'Join Beta Program': '加入测试计划',
+      'Enable Developer Mode': '启用开发者模式',
+      'Enable some developer-oriented features, including detailed console logs and native context menus.': '启用一些面向开发者的功能，包括详细的控制台日志和原生右键菜单。',
+      'Enable some developer-oriented features, including detailed console logs and native context menus': '启用一些面向开发者的功能，包括详细的控制台日志和原生右键菜单',
+      
+      // ===== 无障碍 =====
+      'Accessibility': '无障碍',
+      'Reduce Motion': '减少动画',
+      'High Contrast': '高对比度',
+      'Screen Reader': '屏幕阅读器',
+      
       // ===== Settings 设置界面 =====
       'Settings': '设置',
       'Preferences': '偏好设置',
@@ -492,19 +515,34 @@
       }
 
       textNodes.forEach(node => {
-        const text = node.textContent.trim();
+        let text = node.textContent.trim();
+        
+        // 直接匹配
         if (textMappings[text]) {
           node.textContent = node.textContent.replace(text, textMappings[text]);
+          return;
+        }
+        
+        // 处理 "Signed In as xxx" 格式
+        if (text.toLowerCase().startsWith('signed in as ')) {
+          const username = text.substring(13);
+          node.textContent = node.textContent.replace(text, `已登录为 ${username}`);
+          return;
         }
       });
 
       // 翻译元素属性
-      document.querySelectorAll('button, input, textarea, label, h1, h2, h3, h4, h5, h6, span, p, a, th, td, li, option, [role="button"], [role="menuitem"], [role="tab"]').forEach(el => {
+      document.querySelectorAll('button, input, textarea, label, h1, h2, h3, h4, h5, h6, span, p, a, th, td, li, option, div, [role="button"], [role="menuitem"], [role="tab"], [role="option"]').forEach(el => {
         // 翻译文本内容
         if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
-          const text = el.textContent?.trim();
+          let text = el.textContent?.trim();
           if (text && textMappings[text]) {
             el.textContent = textMappings[text];
+          }
+          // 处理 "Signed In as xxx" 格式
+          if (text && text.toLowerCase().startsWith('signed in as ')) {
+            const username = text.substring(13);
+            el.textContent = `已登录为 ${username}`;
           }
         }
         
