@@ -350,7 +350,7 @@ export const profileConfig: ProfileConfig = {
     // 头像配置 (相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录)
     avatar: "assets/images/avatar.png",
     // 信息配置
-    name: "Twilight",
+    name: "Aniv",
     // 简介配置
     bio: "Hi",
     // 链接配置
@@ -358,7 +358,7 @@ export const profileConfig: ProfileConfig = {
         {
             name: "GitHub",
             icon: "fa6-brands:github",
-            url: "https://github.com/Spr-Aachen/Twilight",
+            url: "https://github.com/Aniv",
         },
     ],
 };
