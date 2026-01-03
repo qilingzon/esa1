@@ -354,3 +354,31 @@
         font-size: 0 !important;
     }
 }
+
+/* 移动端性能优化 - 禁用耗性能的模糊效果 */
+@media (max-width: 768px) {
+    /* 使用简单背景替代 backdrop-filter */
+    #navbar > div,
+    .dropdown-content,
+    #display-setting,
+    #nav-menu-panel,
+    #translate-panel,
+    #search-panel {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* 点击响应优化 */
+    button, a, [role="button"] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* GPU 加速优化 */
+    #navbar,
+    #nav-menu-panel,
+    .dropdown-content {
+        transform: translateZ(0);
+        will-change: auto;
+    }
+}
