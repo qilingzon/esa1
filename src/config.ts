@@ -92,7 +92,7 @@ export const siteConfig: SiteConfig = {
             ],
         },
         // 壁纸位置 ('top' | 'center' | 'bottom')
-        position: "boottom",
+        position: "bottom",
         // 轮播配置 (fullscreen 和 banner 模式共享)
         carousel: {
             // 为多张图片启用轮播，否则随机显示一张图片
