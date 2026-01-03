@@ -4,6 +4,13 @@
  * 只有当页面启用banner时才应用半透明效果
 */
 
+/* 手机端导航栏始终显示，不隐藏 */
+@media (max-width: 1023px) {
+    #navbar-wrapper.navbar-hidden {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
 
 /* 导航区域基础布局样式（避免 flex 子项溢出） */
 .navbar-nav-links {
