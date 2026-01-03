@@ -572,8 +572,8 @@ const setup = () => {
     window.swup.hooks.on('link:click', () => {
         // Remove the delay for the first time page load
         document.documentElement.style.setProperty('--content-delay', '0ms')
-        // 简化navbar处理逻辑
-        if (bannerEnabled) {
+        // 简化navbar处理逻辑 - 手机端不隐藏导航栏
+        if (bannerEnabled && window.innerWidth >= 1024) {
             const navbar = document.getElementById('navbar-wrapper')
             if (navbar && document.body.classList.contains('lg:is-home')) {
                 const threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 88
@@ -741,6 +741,11 @@ function scrollFunction() {
             }
         }
         if (bannerEnabled && navbar) {
+            // 手机端（小于 1024px）导航栏始终显示
+            if (window.innerWidth < 1024) {
+                navbar.classList.remove('navbar-hidden');
+                return;
+            }
             const isHome = document.body.classList.contains('lg:is-home') && window.innerWidth >= BREAKPOINT_LG;
             const currentBannerHeight = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
             const threshold = window.innerHeight * (currentBannerHeight / 100) - 88;
