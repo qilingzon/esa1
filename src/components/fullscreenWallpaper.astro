@@ -139,7 +139,7 @@ const positionClass = getPositionClass(position);
             })}
         </div>
 
-    <!-- 移动端壁纸 -->
+    <!-- 移动端壁纸 - 不应用模糊效果，保持高清 -->
     <div class="block lg:hidden w-full h-full relative">
             {imageSources.mobile.map((src, index) => {
                 const isLocal = !src.startsWith("http");
@@ -152,7 +152,6 @@ const positionClass = getPositionClass(position);
                             alt={`Mobile wallpaper ${index + 1}`}
                             class={imageClass}
                             data-carousel-item={isCarouselEnabled ? index : undefined}
-                            style={blur > 0 ? `filter: blur(${blur}px);` : undefined}
                         />
                     );
                 } else {
@@ -162,7 +161,6 @@ const positionClass = getPositionClass(position);
                             alt={`Mobile wallpaper ${index + 1}`}
                             class={imageClass}
                             data-carousel-item={isCarouselEnabled ? index : undefined}
-                            style={blur > 0 ? `filter: blur(${blur}px);` : undefined}
                         />
                     );
                 }

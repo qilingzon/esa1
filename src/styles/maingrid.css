@@ -145,3 +145,37 @@
         transition: none !important;
     }
 }
+
+/* 手机端全屏壁纸 - 滑动后显示 */
+@media (max-width: 1023px) {
+    .mobile-fullscreen-wallpaper {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        /* 确保高清显示，不模糊 */
+        filter: none !important;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        /* 确保在内容后面但可见 */
+        z-index: 0 !important;
+    }
+    
+    .mobile-fullscreen-wallpaper.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* 确保全屏壁纸图片高清 */
+    .mobile-fullscreen-wallpaper img {
+        filter: none !important;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* 桌面端隐藏手机端全屏壁纸 */
+@media (min-width: 1024px) {
+    .mobile-fullscreen-wallpaper {
+        display: none !important;
+    }
+}

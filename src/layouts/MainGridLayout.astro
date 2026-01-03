@@ -240,10 +240,10 @@ const mainContentClass = `
     setOGTypeArticle={setOGTypeArticle}
     postSlug={postSlug}
 >
-    <!-- 全屏壁纸 - 总是渲染但通过CSS控制可见性 -->
+    <!-- 全屏壁纸 - 手机端首页滑动后显示 -->
     <FullscreenWallpaper
         config={siteConfig.wallpaper}
-        class={siteConfig.wallpaper.mode === "fullscreen" ? "" : "hidden"}
+        class={siteConfig.wallpaper.mode === "fullscreen" ? "" : "mobile-fullscreen-wallpaper"}
     />
 
     <!-- 全局图标加载器 -->
@@ -441,4 +441,46 @@ const mainContentClass = `
     
     // 定时检查，处理 TOC 等组件动态隐藏的情况
     setInterval(adjustLayout, 1000);
+</script>
+
+<script>
+    // 手机端首页滑动后显示全屏壁纸
+    function initMobileFullscreenWallpaper() {
+        // 只在手机端首页生效
+        const isMobile = window.innerWidth < 1024;
+        const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+        
+        if (!isMobile || !isHomePage) return;
+        
+        const wallpaper = document.querySelector('.mobile-fullscreen-wallpaper');
+        if (!wallpaper) return;
+        
+        let hasShown = false;
+        
+        function checkScroll() {
+            // 当滚动超过 80% 屏幕高度时显示全屏壁纸
+            const scrollThreshold = window.innerHeight * 0.8;
+            
+            if (window.scrollY > scrollThreshold && !hasShown) {
+                wallpaper.classList.add('show');
+                hasShown = true;
+            }
+        }
+        
+        // 使用 passive 监听器提高滚动性能
+        window.addEventListener('scroll', checkScroll, { passive: true });
+        
+        // 初始检查
+        checkScroll();
+    }
+    
+    // 页面加载完成后初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileFullscreenWallpaper);
+    } else {
+        initMobileFullscreenWallpaper();
+    }
+    
+    // Swup 页面切换后重新初始化
+    document.addEventListener('swup:contentReplaced', initMobileFullscreenWallpaper);
 </script>
