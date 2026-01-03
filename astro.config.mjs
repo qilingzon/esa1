@@ -230,11 +230,6 @@ export default defineConfig({
     },
     vite: {
         build: {
-            // 启用 CSS 代码分割
-            cssCodeSplit: true,
-            // 压缩选项
-            minify: 'esbuild',
-            // 优化分块策略
             rollupOptions: {
                 onwarn(warning, warn) {
                     // temporarily suppress this warning
@@ -246,32 +241,7 @@ export default defineConfig({
                     }
                     warn(warning);
                 },
-                output: {
-                    // 手动分块策略，提高缓存命中率
-                    manualChunks: {
-                        // 将核心框架分离
-                        'vendor-svelte': ['svelte'],
-                        // 将工具库分离
-                        'vendor-utils': ['dayjs', 'marked'],
-                    },
-                    // 资源文件名优化（包含内容哈希）
-                    assetFileNames: (assetInfo) => {
-                        const info = assetInfo.name.split('.');
-                        const ext = info[info.length - 1];
-                        if (/\.(png|jpe?g|gif|svg|webp|ico)$/i.test(assetInfo.name)) {
-                            return `assets/images/[name]-[hash][extname]`;
-                        }
-                        if (/\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name)) {
-                            return `assets/fonts/[name]-[hash][extname]`;
-                        }
-                        return `assets/[name]-[hash][extname]`;
-                    },
-                },
             },
-        },
-        // 优化依赖预构建
-        optimizeDeps: {
-            include: ['svelte', 'dayjs'],
         },
     },
 });
