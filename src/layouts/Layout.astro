@@ -317,6 +317,14 @@ const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
 
         <link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
+        <!-- 预加载壁纸图片 -->
+        {enableBanner && siteConfig.wallpaper.src?.desktop && (
+            <link rel="preload" as="image" href={Array.isArray(siteConfig.wallpaper.src.desktop) ? siteConfig.wallpaper.src.desktop[0] : siteConfig.wallpaper.src.desktop} fetchpriority="high" />
+        )}
+        {enableBanner && siteConfig.wallpaper.src?.mobile && (
+            <link rel="preload" as="image" href={Array.isArray(siteConfig.wallpaper.src.mobile) ? siteConfig.wallpaper.src.mobile[0] : siteConfig.wallpaper.src.mobile} media="(max-width: 1023px)" fetchpriority="high" />
+        )}
+
         <!-- Umami Analytics -->
         {umamiEnabled && umamiScripts && <Fragment set:html={umamiScripts} />}
 </head>
