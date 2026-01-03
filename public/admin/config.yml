@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: qilingzon/eo1
+  repo: qilingzon/esa1
   branch: main
 # 语言设置
 locale: "zh_Hans"
