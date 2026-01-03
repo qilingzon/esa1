@@ -414,6 +414,13 @@ const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
     .navbar-hidden {
         @apply opacity-0 -translate-y-16
     }
+    /* 手机端导航栏始终显示 */
+    @media (max-width: 1023px) {
+        .navbar-hidden {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+    }
 }
 </style>
 
