@@ -96,18 +96,20 @@
 
 /* 大屏手机端横幅优化 */
 @media (min-width: 513px) and (max-width: 768px) {
-    /* 主内容区域位置调整 - 确保在banner下面 */
-    .absolute.w-full.z-30 {
-        top: 75vh !important;
-        min-height: calc(100vh - 75vh) !important;
+    /* 主内容区域位置调整 - 首页在全屏 banner 下面 */
+    .absolute.w-full.z-30:not(.mobile-main-no-banner):not(.no-banner-layout) {
+        top: 100vh !important;
+        top: 100dvh !important;
+        min-height: 100vh !important;
     }
 }
 
 /* 小屏手机横幅优化 */
 @media (max-width: 512px) {
-    .absolute.w-full.z-30 {
-        top: 70vh !important;
-        min-height: calc(100vh - 70vh) !important;
+    .absolute.w-full.z-30:not(.mobile-main-no-banner):not(.no-banner-layout) {
+        top: 100vh !important;
+        top: 100dvh !important;
+        min-height: 100vh !important;
     }
 }
 

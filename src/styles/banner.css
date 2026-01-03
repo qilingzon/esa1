@@ -327,10 +327,11 @@
 
 /* 中屏手机优化 */
 @media (min-width: 513px) and (max-width: 768px) {
-    /* Banner wrapper 高度优化 */
-    #banner-wrapper {
-        height: 75vh !important;
-        min-height: 500px;
+    /* Banner wrapper 高度优化 - 首页占满屏幕 */
+    #banner-wrapper:not(.mobile-hide-banner) {
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: 100vh;
         max-height: none;
         top: 0 !important;
     }
@@ -368,10 +369,11 @@
 
 /* 小屏手机优化 */
 @media (max-width: 512px) {
-    /* Banner wrapper 高度优化 */
-    #banner-wrapper {
-        height: 70vh !important;
-        min-height: 450px;
+    /* Banner wrapper 高度优化 - 首页占满屏幕 */
+    #banner-wrapper:not(.mobile-hide-banner) {
+        height: 100vh !important;
+        height: 100dvh !important; /* 动态视口高度，更好适配移动端 */
+        min-height: 100vh;
         max-height: none;
         top: 0 !important;
     }
@@ -617,5 +619,45 @@
     .banner-subtitle {
         font-size: 1rem !important;
         line-height: 1.2 !important;
+    }
+}
+
+
+/* 移动端向上滑动提示 */
+@media (max-width: 1023px) {
+    .mobile-swipe-hint {
+        animation: fadeIn 1s ease-out 1s both;
+    }
+    
+    .mobile-swipe-hint .swipe-arrow {
+        width: 20px;
+        height: 20px;
+        border-left: 2px solid rgba(255, 255, 255, 0.8);
+        border-top: 2px solid rgba(255, 255, 255, 0.8);
+        transform: rotate(45deg);
+        animation: swipeUp 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes swipeUp {
+        0%, 100% {
+            transform: translateY(0) rotate(45deg);
+            opacity: 0.8;
+        }
+        50% {
+            transform: translateY(-8px) rotate(45deg);
+            opacity: 1;
+        }
+    }
+}
+
+/* 桌面端隐藏滑动提示 */
+@media (min-width: 1024px) {
+    .mobile-swipe-hint {
+        display: none !important;
     }
 }

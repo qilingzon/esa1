@@ -9,7 +9,6 @@ import { getSortedPosts } from "@utils/content-utils";
 import Pagination from "@components/pagination.astro";
 import PostPage from "@components/postPage.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import MobileWelcome from "@components/mobileWelcome.astro";
 
 
 export const getStaticPaths = (async ({ paginate }) => {
@@ -22,13 +21,9 @@ export const getStaticPaths = (async ({ paginate }) => {
 const { page } = Astro.props;
 
 const len = page.data.length;
-
-// 检查是否是首页（第一页）
-const isFirstPage = page.currentPage === 1;
 ---
 
 <MainGridLayout>
-    {isFirstPage && <MobileWelcome />}
     <PostPage page={page}></PostPage>
     <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
 </MainGridLayout>
