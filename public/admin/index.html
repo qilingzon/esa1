@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,32 +17,530 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
-    // 等待 CMS 加载后隐藏 OAuth 按钮
-    const hideOAuthButton = () => {
-      const buttons = document.querySelectorAll('button');
-      buttons.forEach(btn => {
-        const text = btn.textContent?.toLowerCase() || '';
-        if (text.includes('sign in with') || text.includes('github') || text.includes('登录')) {
-          // 保留包含 token 的按钮
-          if (!text.includes('token') && !text.includes('令牌')) {
-            btn.style.display = 'none';
+    // Sveltia CMS 完整中文汉化
+    const textMappings = {
+      // ===== Settings 设置界面 =====
+      'Settings': '设置',
+      'Preferences': '偏好设置',
+      'Account': '账户',
+      'General': '通用',
+      'Appearance': '外观',
+      'Theme': '主题',
+      'Language': '语言',
+      'Dark': '深色',
+      'Light': '浅色',
+      'Auto': '自动',
+      'System': '跟随系统',
+      'Use system setting': '跟随系统设置',
+      'Interface Language': '界面语言',
+      'Date Format': '日期格式',
+      'Time Format': '时间格式',
+      'Timezone': '时区',
+      'Time Zone': '时区',
+      
+      // Settings - 账户相关
+      'Profile': '个人资料',
+      'User': '用户',
+      'Username': '用户名',
+      'Email': '邮箱',
+      'Avatar': '头像',
+      'Display Name': '显示名称',
+      'Full Name': '全名',
+      'Bio': '简介',
+      'Website': '网站',
+      'Location': '位置',
+      'Company': '公司',
+      'Organization': '组织',
+      
+      // Settings - 编辑器设置
+      'Editor': '编辑器',
+      'Editor Settings': '编辑器设置',
+      'Default Editor': '默认编辑器',
+      'Preview': '预览',
+      'Live Preview': '实时预览',
+      'Enable Preview': '启用预览',
+      'Show Preview': '显示预览',
+      'Hide Preview': '隐藏预览',
+      'Split View': '分屏视图',
+      'Side by Side': '并排显示',
+      'Tabs': '标签页',
+      'Auto Save': '自动保存',
+      'Auto-save': '自动保存',
+      'Spell Check': '拼写检查',
+      'Word Wrap': '自动换行',
+      'Line Numbers': '行号',
+      'Show Line Numbers': '显示行号',
+      'Font Size': '字体大小',
+      'Font Family': '字体',
+      'Tab Size': '制表符大小',
+      'Indent Size': '缩进大小',
+      'Use Tabs': '使用制表符',
+      'Use Spaces': '使用空格',
+      
+      // Settings - 媒体设置
+      'Media Settings': '媒体设置',
+      'Media Library': '媒体库',
+      'Upload Settings': '上传设置',
+      'Max File Size': '最大文件大小',
+      'Allowed File Types': '允许的文件类型',
+      'Image Optimization': '图片优化',
+      'Compress Images': '压缩图片',
+      'Resize Images': '调整图片大小',
+      'Max Width': '最大宽度',
+      'Max Height': '最大高度',
+      'Quality': '质量',
+      'Image Quality': '图片质量',
+      
+      // Settings - 工作流设置
+      'Workflow': '工作流',
+      'Workflow Settings': '工作流设置',
+      'Editorial Workflow': '编辑工作流',
+      'Enable Editorial Workflow': '启用编辑工作流',
+      'Require Review': '需要审核',
+      'Auto Publish': '自动发布',
+      'Publish Mode': '发布模式',
+      'Simple': '简单',
+      'Editorial': '编辑',
+      
+      // Settings - 高级设置
+      'Advanced': '高级',
+      'Advanced Settings': '高级设置',
+      'Developer Mode': '开发者模式',
+      'Debug Mode': '调试模式',
+      'Show Debug Info': '显示调试信息',
+      'Clear Cache': '清除缓存',
+      'Reset Settings': '重置设置',
+      'Reset to Default': '恢复默认',
+      'Export Settings': '导出设置',
+      'Import Settings': '导入设置',
+      'Backup': '备份',
+      'Restore': '恢复',
+      
+      // Settings - 通知设置
+      'Notifications': '通知',
+      'Notification Settings': '通知设置',
+      'Enable Notifications': '启用通知',
+      'Email Notifications': '邮件通知',
+      'Push Notifications': '推送通知',
+      'Desktop Notifications': '桌面通知',
+      'Sound': '声音',
+      'Enable Sound': '启用声音',
+      
+      // Settings - 安全设置
+      'Security': '安全',
+      'Security Settings': '安全设置',
+      'Password': '密码',
+      'Change Password': '修改密码',
+      'Current Password': '当前密码',
+      'New Password': '新密码',
+      'Confirm Password': '确认密码',
+      'Two-Factor Authentication': '两步验证',
+      '2FA': '两步验证',
+      'Enable 2FA': '启用两步验证',
+      'Sessions': '会话',
+      'Active Sessions': '活动会话',
+      'Sign Out All': '全部退出',
+      'Sign Out Other Sessions': '退出其他会话',
+      
+      // Settings - 集成设置
+      'Integrations': '集成',
+      'Connected Services': '已连接的服务',
+      'Connect': '连接',
+      'Disconnect': '断开连接',
+      'Connected': '已连接',
+      'Not Connected': '未连接',
+      'API': 'API',
+      'API Key': 'API 密钥',
+      'API Keys': 'API 密钥',
+      'Generate API Key': '生成 API 密钥',
+      'Revoke': '撤销',
+      'Webhooks': 'Webhooks',
+      'Add Webhook': '添加 Webhook',
+      
+      // Settings - 关于
+      'About': '关于',
+      'Version': '版本',
+      'Check for Updates': '检查更新',
+      'Up to Date': '已是最新',
+      'Update Available': '有可用更新',
+      'Release Notes': '更新日志',
+      'Changelog': '更新日志',
+      'License': '许可证',
+      'Terms of Service': '服务条款',
+      'Privacy Policy': '隐私政策',
+      'Documentation': '文档',
+      'Help': '帮助',
+      'Support': '支持',
+      'Feedback': '反馈',
+      'Report a Bug': '报告问题',
+      'Feature Request': '功能建议',
+      
+      // ===== 通用操作 =====
+      'Save': '保存',
+      'Save Changes': '保存更改',
+      'Saving': '保存中',
+      'Saving...': '保存中...',
+      'Saved': '已保存',
+      'Cancel': '取消',
+      'Delete': '删除',
+      'Edit': '编辑',
+      'Create': '新建',
+      'New': '新建',
+      'Add': '添加',
+      'Remove': '移除',
+      'Close': '关闭',
+      'Confirm': '确认',
+      'Apply': '应用',
+      'OK': '确定',
+      'Yes': '是',
+      'No': '否',
+      'On': '开',
+      'Off': '关',
+      'Enable': '启用',
+      'Disable': '禁用',
+      'Enabled': '已启用',
+      'Disabled': '已禁用',
+      'Show': '显示',
+      'Hide': '隐藏',
+      'Search': '搜索',
+      'Filter': '筛选',
+      'Sort': '排序',
+      'Refresh': '刷新',
+      'Reload': '重新加载',
+      'Loading': '加载中',
+      'Loading...': '加载中...',
+      'Back': '返回',
+      'Next': '下一步',
+      'Previous': '上一步',
+      'Finish': '完成',
+      'Done': '完成',
+      'Skip': '跳过',
+      'Continue': '继续',
+      'Submit': '提交',
+      'Reset': '重置',
+      'Clear': '清除',
+      'Select': '选择',
+      'Select All': '全选',
+      'Deselect All': '取消全选',
+      'None': '无',
+      'All': '全部',
+      'Default': '默认',
+      'Custom': '自定义',
+      'More': '更多',
+      'Less': '更少',
+      'Options': '选项',
+      'Actions': '操作',
+      'View': '查看',
+      'Details': '详情',
+      'Info': '信息',
+      'Information': '信息',
+      'Warning': '警告',
+      'Error': '错误',
+      'Success': '成功',
+      'Failed': '失败',
+      'Pending': '待处理',
+      'Required': '必填',
+      'Optional': '可选',
+      
+      // ===== 登录相关 =====
+      'Sign in': '登录',
+      'Sign In': '登录',
+      'Sign out': '退出登录',
+      'Sign Out': '退出登录',
+      'Log in': '登录',
+      'Log In': '登录',
+      'Log out': '退出登录',
+      'Log Out': '退出登录',
+      'Sign in with GitHub': '使用 GitHub 登录',
+      'Sign in with GitLab': '使用 GitLab 登录',
+      'Sign in with Bitbucket': '使用 Bitbucket 登录',
+      'Sign in with your access token': '使用访问令牌登录',
+      'Access Token': '访问令牌',
+      'Token': '令牌',
+      'Enter your access token': '请输入访问令牌',
+      'Remember me': '记住我',
+      'Forgot password': '忘记密码',
+      'Forgot Password': '忘记密码',
+      
+      // ===== 内容管理 =====
+      'Contents': '内容',
+      'Content': '内容',
+      'Entries': '条目',
+      'Entry': '条目',
+      'New Entry': '新建条目',
+      'Edit Entry': '编辑条目',
+      'Delete Entry': '删除条目',
+      'Duplicate Entry': '复制条目',
+      'Draft': '草稿',
+      'Drafts': '草稿',
+      'Published': '已发布',
+      'Publish': '发布',
+      'Unpublish': '取消发布',
+      'Publish Now': '立即发布',
+      'Schedule': '定时发布',
+      'Scheduled': '已定时',
+      'In Review': '审核中',
+      'Ready': '待发布',
+      'Status': '状态',
+      'Title': '标题',
+      'Description': '描述',
+      'Body': '正文',
+      'Slug': '别名',
+      'Tags': '标签',
+      'Category': '分类',
+      'Categories': '分类',
+      'Author': '作者',
+      'Date': '日期',
+      'Created': '创建时间',
+      'Updated': '更新时间',
+      'Modified': '修改时间',
+      'Last Modified': '最后修改',
+      
+      // ===== 媒体库 =====
+      'Media': '媒体',
+      'Upload': '上传',
+      'Upload File': '上传文件',
+      'Upload Files': '上传文件',
+      'Upload Image': '上传图片',
+      'Choose File': '选择文件',
+      'Choose Files': '选择文件',
+      'Select File': '选择文件',
+      'Select Image': '选择图片',
+      'Drop files here': '将文件拖放到此处',
+      'Drag and drop files here': '将文件拖放到此处',
+      'or click to upload': '或点击上传',
+      'Browse': '浏览',
+      'File': '文件',
+      'Files': '文件',
+      'Image': '图片',
+      'Images': '图片',
+      'Video': '视频',
+      'Audio': '音频',
+      'Document': '文档',
+      'File Name': '文件名',
+      'File Size': '文件大小',
+      'File Type': '文件类型',
+      'Dimensions': '尺寸',
+      'Insert': '插入',
+      'Insert Selected': '插入所选',
+      'Delete Selected': '删除所选',
+      'No file selected': '未选择文件',
+      'No files found': '未找到文件',
+      'No images found': '未找到图片',
+      
+      // ===== 编辑器 =====
+      'Rich Text': '富文本',
+      'Markdown': 'Markdown',
+      'Raw': '原始文本',
+      'Code': '代码',
+      'Bold': '粗体',
+      'Italic': '斜体',
+      'Underline': '下划线',
+      'Strikethrough': '删除线',
+      'Heading': '标题',
+      'Heading 1': '一级标题',
+      'Heading 2': '二级标题',
+      'Heading 3': '三级标题',
+      'Heading 4': '四级标题',
+      'Heading 5': '五级标题',
+      'Heading 6': '六级标题',
+      'Paragraph': '段落',
+      'Quote': '引用',
+      'Blockquote': '引用块',
+      'Code Block': '代码块',
+      'Link': '链接',
+      'Insert Link': '插入链接',
+      'Edit Link': '编辑链接',
+      'Remove Link': '移除链接',
+      'URL': '链接地址',
+      'Link Text': '链接文本',
+      'Open in new tab': '在新标签页打开',
+      'Insert Image': '插入图片',
+      'Alt Text': '替代文本',
+      'Caption': '标题',
+      'Table': '表格',
+      'Insert Table': '插入表格',
+      'Add Row': '添加行',
+      'Add Column': '添加列',
+      'Delete Row': '删除行',
+      'Delete Column': '删除列',
+      'List': '列表',
+      'Bullet List': '无序列表',
+      'Numbered List': '有序列表',
+      'Ordered List': '有序列表',
+      'Unordered List': '无序列表',
+      'Check List': '任务列表',
+      'Task List': '任务列表',
+      'Indent': '增加缩进',
+      'Outdent': '减少缩进',
+      'Align Left': '左对齐',
+      'Align Center': '居中对齐',
+      'Align Right': '右对齐',
+      'Align Justify': '两端对齐',
+      'Undo': '撤销',
+      'Redo': '重做',
+      'Copy': '复制',
+      'Cut': '剪切',
+      'Paste': '粘贴',
+      'Find': '查找',
+      'Replace': '替换',
+      'Find and Replace': '查找和替换',
+      'Fullscreen': '全屏',
+      'Exit Fullscreen': '退出全屏',
+      
+      // ===== 列表操作 =====
+      'Add Item': '添加项目',
+      'Remove Item': '移除项目',
+      'Move Up': '上移',
+      'Move Down': '下移',
+      'Collapse': '折叠',
+      'Expand': '展开',
+      'Collapse All': '全部折叠',
+      'Expand All': '全部展开',
+      'Reorder': '重新排序',
+      'Drag to reorder': '拖动以重新排序',
+      
+      // ===== 日期时间 =====
+      'Today': '今天',
+      'Yesterday': '昨天',
+      'Tomorrow': '明天',
+      'Now': '现在',
+      'Time': '时间',
+      'Date and Time': '日期和时间',
+      'Select Date': '选择日期',
+      'Select Time': '选择时间',
+      'Start Date': '开始日期',
+      'End Date': '结束日期',
+      'Start Time': '开始时间',
+      'End Time': '结束时间',
+      
+      // ===== 确认对话框 =====
+      'Are you sure?': '确定吗？',
+      'Confirm Delete': '确认删除',
+      'Confirm delete': '确认删除',
+      'Are you sure you want to delete this?': '确定要删除吗？',
+      'This action cannot be undone': '此操作无法撤销',
+      'This action cannot be undone.': '此操作无法撤销。',
+      'Unsaved Changes': '未保存的更改',
+      'You have unsaved changes': '您有未保存的更改',
+      'Discard Changes': '放弃更改',
+      'Discard changes?': '放弃更改？',
+      'Save and Close': '保存并关闭',
+      'Close without Saving': '不保存并关闭',
+      
+      // ===== 状态消息 =====
+      'Changes saved successfully': '更改已成功保存',
+      'Entry saved successfully': '条目已成功保存',
+      'Entry published successfully': '条目已成功发布',
+      'Entry deleted successfully': '条目已成功删除',
+      'Settings saved': '设置已保存',
+      'Settings saved successfully': '设置已成功保存',
+      'Error saving': '保存时出错',
+      'Error loading': '加载时出错',
+      'Error deleting': '删除时出错',
+      'Something went wrong': '出了点问题',
+      'Please try again': '请重试',
+      'No results found': '未找到结果',
+      'No entries found': '未找到条目',
+      
+      // ===== 其他 =====
+      'Name': '名称',
+      'Value': '值',
+      'Type': '类型',
+      'Size': '大小',
+      'Path': '路径',
+      'Folder': '文件夹',
+      'Source': '来源',
+      'Target': '目标',
+      'items': '项',
+      'item': '项',
+      'of': '/',
+      'page': '页',
+      'pages': '页',
+      'Showing': '显示',
+      'Total': '共',
+      'per page': '每页',
+      'Go to page': '跳转到页',
+      'First': '第一页',
+      'Last': '最后一页',
+      'Quick Add': '快速添加',
+      'Duplicate': '复制',
+      'Download': '下载',
+      'Export': '导出',
+      'Import': '导入',
+      'Print': '打印',
+      'Share': '分享',
+      'Copy Link': '复制链接',
+      'Link Copied': '链接已复制',
+      'Copied': '已复制',
+      'Copy to Clipboard': '复制到剪贴板'
+    };
+
+    // 汉化界面文本
+    const translateUI = () => {
+      // 翻译文本节点
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+
+      const textNodes = [];
+      while (walker.nextNode()) {
+        textNodes.push(walker.currentNode);
+      }
+
+      textNodes.forEach(node => {
+        const text = node.textContent.trim();
+        if (textMappings[text]) {
+          node.textContent = node.textContent.replace(text, textMappings[text]);
+        }
+      });
+
+      // 翻译元素属性
+      document.querySelectorAll('button, input, textarea, label, h1, h2, h3, h4, h5, h6, span, p, a, th, td, li, option, [role="button"], [role="menuitem"], [role="tab"]').forEach(el => {
+        // 翻译文本内容
+        if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+          const text = el.textContent?.trim();
+          if (text && textMappings[text]) {
+            el.textContent = textMappings[text];
           }
+        }
+        
+        // 翻译属性
+        ['aria-label', 'title', 'placeholder', 'alt'].forEach(attr => {
+          const value = el.getAttribute(attr);
+          if (value && textMappings[value]) {
+            el.setAttribute(attr, textMappings[value]);
+          }
+        });
+      });
+    };
+
+    // 隐藏 OAuth 按钮
+    const hideOAuthButton = () => {
+      document.querySelectorAll('button').forEach(btn => {
+        const text = btn.textContent?.toLowerCase() || '';
+        if ((text.includes('sign in with') || text.includes('github')) && 
+            !text.includes('token') && !text.includes('令牌') && !text.includes('访问')) {
+          btn.style.display = 'none';
         }
       });
     };
 
-    // 使用 MutationObserver 监听 DOM 变化
-    const observer = new MutationObserver((mutations) => {
+    // MutationObserver 监听 DOM 变化
+    const observer = new MutationObserver(() => {
       hideOAuthButton();
+      translateUI();
     });
 
-    // 页面加载完成后开始观察
+    // 页面加载后开始观察
     document.addEventListener('DOMContentLoaded', () => {
       observer.observe(document.body, { childList: true, subtree: true });
-      // 初始隐藏
-      setTimeout(hideOAuthButton, 500);
-      setTimeout(hideOAuthButton, 1000);
-      setTimeout(hideOAuthButton, 2000);
+      [500, 1000, 2000, 3000, 5000].forEach(delay => {
+        setTimeout(() => { hideOAuthButton(); translateUI(); }, delay);
+      });
     });
   </script>
 </body>
