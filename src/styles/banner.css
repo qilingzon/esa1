@@ -327,32 +327,32 @@
 
 /* 中屏手机优化 */
 @media (min-width: 513px) and (max-width: 768px) {
-    /* Banner wrapper 高度优化 - 优先保持banner显示 */
+    /* Banner wrapper 高度优化 - 首页占满屏幕 */
     #banner-wrapper {
-        height: 75vh !important;
-        min-height: 500px;
-        max-height: none; /* 移除最大高度限制 */
-        top: 0 !important; /* 移动端从顶部开始，避免被导航栏覆盖 */
+        height: 100vh !important; /* 首页占满整个屏幕 */
+        min-height: 100vh;
+        max-height: none;
+        top: 0 !important;
     }
     
     /* 横幅文本覆盖层优化 */
     .banner-text-overlay {
-        align-items: center !important; /* 垂直居中 */
-        justify-content: center !important; /* 水平居中 */
+        align-items: center !important;
+        justify-content: center !important;
         padding: 1.5rem !important;
-        text-align: center !important; /* 文字居中对齐 */
+        text-align: center !important;
     }
     
     /* 文本容器优化 */
     .banner-text-overlay > div {
-        margin-bottom: 0 !important; /* 移除底部边距，保持居中 */
+        margin-bottom: 0 !important;
         width: 90% !important;
-        text-align: center !important; /* 确保文字居中 */
+        text-align: center !important;
     }
     
     /* 标题字体优化 */
     .banner-title {
-        font-size: 3.8rem !important; /* 增大字体大小 */
+        font-size: 3.8rem !important;
         line-height: 1.1 !important;
         margin-bottom: 0.75rem !important;
         text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8) !important;
@@ -368,35 +368,35 @@
 
 /* 小屏手机优化 */
 @media (max-width: 512px) {
-    /* Banner wrapper 高度优化 - 优先保持banner显示 */
+    /* Banner wrapper 高度优化 - 首页占满屏幕 */
     #banner-wrapper {
-        height: 70vh !important; /* 保持较大高度优先显示banner */
-        min-height: 450px;
-        max-height: none; /* 移除最大高度限制 */
-        top: 0 !important; /* 移动端从顶部开始，避免被导航栏覆盖 */
+        height: 100vh !important; /* 首页占满整个屏幕 */
+        min-height: 100vh;
+        max-height: none;
+        top: 0 !important;
     }
     
     /* 横幅文本覆盖层优化 */
     .banner-text-overlay {
-        align-items: center !important; /* 垂直居中 */
-        justify-content: center !important; /* 水平居中 */
+        align-items: center !important;
+        justify-content: center !important;
         padding: 1rem !important;
-        text-align: center !important; /* 文字居中对齐 */
+        text-align: center !important;
     }
     
     /* 文本容器优化 */
     .banner-text-overlay > div {
-        margin-bottom: 0 !important; /* 移除底部边距，保持居中 */
-        width: 95% !important; /* 增加文本宽度利用率 */
-        text-align: center !important; /* 确保文字居中 */
+        margin-bottom: 0 !important;
+        width: 95% !important;
+        text-align: center !important;
     }
     
     /* 标题字体优化 */
     .banner-title {
-        font-size: 3.2rem !important; /* 增大字体大小 */
+        font-size: 3.2rem !important;
         line-height: 1.1 !important;
         margin-bottom: 0.5rem !important;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8) !important; /* 增强阴影 */
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8) !important;
     }
     
     /* 副标题字体优化 */
@@ -617,5 +617,29 @@
     .banner-subtitle {
         font-size: 1rem !important;
         line-height: 1.2 !important;
+    }
+}
+
+
+/* 移动端滚动提示样式 */
+@media (max-width: 1023px) {
+    .scroll-hint {
+        animation: fadeInUp 1s ease-out 1s both;
+    }
+    
+    .scroll-arrow {
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0) rotate(45deg);
+        }
+        40% {
+            transform: translateY(-10px) rotate(45deg);
+        }
+        60% {
+            transform: translateY(-5px) rotate(45deg);
+        }
     }
 }
