@@ -456,19 +456,28 @@ const mainContentClass = `
         if (!wallpaper) return;
         
         let hasShown = false;
+        let ticking = false;
+        const scrollThreshold = window.innerHeight * 0.8;
         
         function checkScroll() {
-            // 当滚动超过 80% 屏幕高度时显示全屏壁纸
-            const scrollThreshold = window.innerHeight * 0.8;
-            
             if (window.scrollY > scrollThreshold && !hasShown) {
                 wallpaper.classList.add('show');
                 hasShown = true;
+                // 已显示后移除监听器
+                window.removeEventListener('scroll', onScroll);
+            }
+            ticking = false;
+        }
+        
+        function onScroll() {
+            if (!ticking && !hasShown) {
+                requestAnimationFrame(checkScroll);
+                ticking = true;
             }
         }
         
         // 使用 passive 监听器提高滚动性能
-        window.addEventListener('scroll', checkScroll, { passive: true });
+        window.addEventListener('scroll', onScroll, { passive: true });
         
         // 初始检查
         checkScroll();
