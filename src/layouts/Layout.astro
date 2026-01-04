@@ -177,6 +177,13 @@ const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
             />
         ))}
 
+        <!-- 预加载背景图片 -->
+        {enableBanner && (
+            <>
+                <link rel="preload" href={url(banner)} as="image" fetchpriority="high" />
+            </>
+        )}
+
         <!-- Set the theme before the page is rendered to avoid a flash -->
         <script is:inline define:vars={{BREAKPOINT_LG, LIGHT_MODE, DARK_MODE, SYSTEM_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue, defaultTheme: siteConfig.defaultTheme}}>
             // Load the theme from local storage

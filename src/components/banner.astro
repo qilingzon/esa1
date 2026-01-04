@@ -70,6 +70,7 @@ const isPerformanceMode = config.banner?.waves?.performanceMode;
                                     class:list={["block lg:hidden object-cover h-full w-full transition-transform duration-600 ease-out"]}
                                     src={Array.isArray(bannerImages.mobile) ? bannerImages.mobile[index] : (typeof bannerImages.mobile === 'string' ? bannerImages.mobile : '')}
                                     position={config.position}
+                                    priority={index === 0}
                                 />
                             )}
                             <!-- Desktop: use desktop-specific images -->
@@ -79,6 +80,7 @@ const isPerformanceMode = config.banner?.waves?.performanceMode;
                                     class:list={["hidden lg:block object-cover h-full w-full transition-transform duration-600 ease-out"]}
                                     src={Array.isArray(bannerImages.desktop) ? bannerImages.desktop[index] : (typeof bannerImages.desktop === 'string' ? bannerImages.desktop : '')}
                                     position={config.position}
+                                    priority={index === 0}
                                 />
                             )}
                         </li>
@@ -95,6 +97,7 @@ const isPerformanceMode = config.banner?.waves?.performanceMode;
                 class:list={["block lg:hidden object-cover h-full w-full transition duration-600 opacity-100"]}
                 src={(Array.isArray(bannerImages.mobile) ? bannerImages.mobile[0] : (typeof bannerImages.mobile === 'string' ? bannerImages.mobile : '')) || (Array.isArray(bannerImages.desktop) ? bannerImages.desktop[0] : (typeof bannerImages.desktop === 'string' ? bannerImages.desktop : '')) || ''}
                 position={config.position}
+                priority={true}
             />
             <!-- Desktop: use desktop-specific image -->
             <ImageWrapper
@@ -103,6 +106,7 @@ const isPerformanceMode = config.banner?.waves?.performanceMode;
                 class:list={["hidden lg:block object-cover h-full transition duration-600 opacity-100"]}
                 src={(Array.isArray(bannerImages.desktop) ? bannerImages.desktop[0] : (typeof bannerImages.desktop === 'string' ? bannerImages.desktop : '')) || (Array.isArray(bannerImages.mobile) ? bannerImages.mobile[0] : (typeof bannerImages.mobile === 'string' ? bannerImages.mobile : '')) || ''}
                 position={config.position}
+                priority={true}
             />
         </div>
     )}
