@@ -412,8 +412,16 @@ export const postConfig: PostConfig = {
     // 评论配置
     comment: {
         // 启用评论功能
-        enable: false,
-        // Twikoo 评论系统配置
+        enable: true,
+        // Giscus 评论系统配置（基于 GitHub Discussions）
+        giscus: {
+            enable: true,
+            repo: "qilingzon/esa1",
+            repoId: "R_kgDOQy1NkA",
+            category: "Announcements",
+            categoryId: "DIC_kwDOQy1NkM4C0kKm",
+        },
+        // Twikoo 评论系统配置（已禁用）
         twikoo: {
             // 环境 ID
             envId: "https://twikoo.vercel.app",

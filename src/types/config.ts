@@ -365,6 +365,14 @@ export type PostConfig = {
     comment: {
         // 启用评论功能
         enable: boolean;
+        // Giscus 评论系统配置
+        giscus?: {
+            enable: boolean;
+            repo: string;
+            repoId: string;
+            category: string;
+            categoryId: string;
+        };
         // Twikoo 评论系统配置
         twikoo?: {
             // 环境 ID
