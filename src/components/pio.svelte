@@ -17,6 +17,13 @@ let pioInstance = null;
 let pioInitialized = false;
 let pioContainer;
 let pioCanvas;
+let isHomePage = false;
+
+// 检查是否为首页
+function checkIsHomePage() {
+    const path = window.location.pathname;
+    return path === '/' || path === '';
+}
 
 // 样式已通过 Layout.astro 静态引入，无需动态加载
 
@@ -76,24 +83,44 @@ function loadPioAssets() {
         });
 }
 
+// 更新显示状态
+function updateVisibility() {
+    isHomePage = checkIsHomePage();
+    if (pioContainer) {
+        pioContainer.style.display = isHomePage ? 'block' : 'none';
+    }
+}
+
 // 样式已通过 Layout.astro 静态引入，无需页面切换监听
 
 onMount(() => {
     if (!pioConfig.enable) return;
 
+    isHomePage = checkIsHomePage();
+    
     // 加载资源并初始化
     loadPioAssets();
+    
+    // 监听页面切换
+    document.addEventListener('swup:contentReplaced', updateVisibility);
+    window.addEventListener('popstate', updateVisibility);
 });
 
 onDestroy(() => {
     // Svelte 组件销毁时不需要清理 Pio 实例
     // 因为我们希望它在页面切换时保持状态
     console.log("Pio Svelte component destroyed (keeping instance alive)");
+    document.removeEventListener('swup:contentReplaced', updateVisibility);
+    window.removeEventListener('popstate', updateVisibility);
 });
 </script>
 
 {#if pioConfig.enable}
-  <div class={`pio-container ${pioConfig.position || 'right'}`} bind:this={pioContainer}>
+  <div 
+    class={`pio-container ${pioConfig.position || 'right'}`} 
+    bind:this={pioContainer}
+    style="display: {isHomePage ? 'block' : 'none'}"
+  >
     <div class="pio-action"></div>
     <canvas 
         id="pio" 
@@ -106,15 +133,16 @@ onDestroy(() => {
 {/if}
 
 <style>
-  /* 手机端看板娘缩小并固定在左下角 */
+  /* 手机端看板娘缩小并固定在右上角 */
   @media (max-width: 768px) {
     .pio-container {
-      transform: scale(0.6);
-      transform-origin: bottom left;
+      transform: scale(0.5);
+      transform-origin: top right;
       position: fixed !important;
-      left: 0 !important;
-      bottom: 0 !important;
-      right: auto !important;
+      right: 0 !important;
+      top: 60px !important;
+      left: auto !important;
+      bottom: auto !important;
     }
   }
 </style>
