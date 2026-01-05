@@ -550,7 +550,7 @@ export const pioConfig: import("./types/config").PioConfig = {
     // 展现模式
     mode: "draggable",
     // 是否在移动设备上隐藏
-    hiddenOnMobile: true,
+    hiddenOnMobile: false,
     // 对话框配置
     dialog: {
         // 欢迎词
