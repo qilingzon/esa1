@@ -105,6 +105,16 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
         // Set the theme for Expressive Code based on current mode
         document.documentElement.setAttribute("data-theme", targetTheme);
 
+        // 强制更新波浪填充颜色（兼容百度浏览器）
+        const waveElements = document.querySelectorAll('.wave-fill');
+        waveElements.forEach((el) => {
+            const computedStyle = window.getComputedStyle(document.documentElement);
+            const pageBg = computedStyle.getPropertyValue('--page-bg');
+            if (pageBg) {
+                (el as SVGUseElement).style.fill = pageBg;
+            }
+        });
+
         // 在下一帧快速移除保护类，使用微任务确保DOM更新完成
         if (needsThemeChange) {
             // 使用 requestAnimationFrame 确保在下一帧移除过渡保护类

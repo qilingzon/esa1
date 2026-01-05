@@ -464,6 +464,33 @@
     will-change: fill;
 }
 
+/* 波浪填充色 - 兼容百度浏览器 */
+.wave-fill {
+    fill: var(--page-bg);
+}
+
+:root.dark .wave-fill {
+    fill: var(--page-bg);
+}
+
+/* 百度浏览器兼容性处理 */
+@supports (fill: var(--page-bg)) {
+    .wave-fill {
+        fill: var(--page-bg);
+    }
+}
+
+/* 备用方案：直接使用currentColor */
+@supports not (fill: var(--page-bg)) {
+    .wave-fill {
+        fill: currentColor;
+    }
+    
+    #header-waves {
+        color: var(--page-bg);
+    }
+}
+
 /* 主题切换时的额外保护 */
 .theme-changing #header-waves,
 .theme-changing #header-waves svg,
