@@ -98,8 +98,9 @@ onDestroy(() => {
     <canvas 
         id="pio" 
         bind:this={pioCanvas}
-        width={pioConfig.width || 280} 
-        height={pioConfig.height || 250}
+        width={(pioConfig.width || 350) * 2}
+        height={(pioConfig.height || 320) * 2}
+        style="width: {pioConfig.width || 350}px; height: {pioConfig.height || 320}px;"
     ></canvas>
   </div>
 {/if}

@@ -544,9 +544,9 @@ export const pioConfig: import("./types/config").PioConfig = {
     // 看板娘位置
     position: "left",
     // 看板娘宽度
-    width: 280,
+    width: 350,
     // 看板娘高度
-    height: 250,
+    height: 320,
     // 展现模式
     mode: "draggable",
     // 是否在移动设备上隐藏
