@@ -17,19 +17,20 @@ let pioInstance = null;
 let pioInitialized = false;
 let pioContainer;
 let pioCanvas;
-let isHomePage = false;
+let isHomePage = true;
+let isBrowser = false;
 
 // 检查是否为首页
 function checkIsHomePage() {
+    if (typeof window === 'undefined') return true;
     const path = window.location.pathname;
     return path === '/' || path === '';
 }
 
-// 样式已通过 Layout.astro 静态引入，无需动态加载
-
 // 等待 DOM 加载完成后再初始化 Pio
 function initPio() {
-    if (typeof window !== "undefined" && typeof Paul_Pio !== "undefined") {
+    if (typeof window === "undefined") return;
+    if (typeof Paul_Pio !== "undefined") {
         try {
             // 确保DOM元素存在
             if (pioContainer && pioCanvas && !pioInitialized) {
@@ -52,8 +53,6 @@ function initPio() {
 // 加载必要的脚本
 function loadPioAssets() {
     if (typeof window === "undefined") return;
-
-    // 样式已通过 Layout.astro 静态引入
 
     // 加载JS脚本
     const loadScript = (src, id) => {
@@ -91,11 +90,10 @@ function updateVisibility() {
     }
 }
 
-// 样式已通过 Layout.astro 静态引入，无需页面切换监听
-
 onMount(() => {
     if (!pioConfig.enable) return;
-
+    
+    isBrowser = true;
     isHomePage = checkIsHomePage();
     
     // 加载资源并初始化
@@ -107,15 +105,14 @@ onMount(() => {
 });
 
 onDestroy(() => {
-    // Svelte 组件销毁时不需要清理 Pio 实例
-    // 因为我们希望它在页面切换时保持状态
+    if (typeof window === 'undefined') return;
     console.log("Pio Svelte component destroyed (keeping instance alive)");
     document.removeEventListener('swup:contentReplaced', updateVisibility);
     window.removeEventListener('popstate', updateVisibility);
 });
 </script>
 
-{#if pioConfig.enable}
+{#if pioConfig.enable && isBrowser}
   <div 
     class={`pio-container ${pioConfig.position || 'right'}`} 
     bind:this={pioContainer}
