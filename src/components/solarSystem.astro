@@ -119,32 +119,25 @@
         const ss = document.getElementById('solar-system');
         if (!ss) return;
         
-        // 使用实际容器尺寸，添加延迟以确保DOM完全加载
-        let rect = ss.getBoundingClientRect();
-        let cx = rect.width / 2;
-        let cy = rect.height / 2;
-        
-        // 如果获取的尺寸为0，使用备用方案
-        if (rect.width === 0 || rect.height === 0) {
-            const parent = ss.parentElement;
-            if (parent) {
-                const parentRect = parent.getBoundingClientRect();
-                rect = { width: parentRect.width, height: parentRect.height };
-                cx = rect.width / 2;
-                cy = rect.height / 2;
-            }
-        }
-        
-        // 如果仍然无法获取尺寸，使用CSS计算的值
-        if (rect.width === 0 || rect.height === 0) {
+        // 获取容器的实际宽高
+        const getContainerSize = () => {
             const computedStyle = window.getComputedStyle(ss);
-            const width = parseFloat(computedStyle.width);
-            const height = parseFloat(computedStyle.height);
-            if (width > 0 && height > 0) {
-                cx = width / 2;
-                cy = height / 2;
+            let width = parseFloat(computedStyle.width);
+            let height = parseFloat(computedStyle.height);
+            
+            // 如果计算值为0，尝试从CSS规则获取
+            if (width === 0 || height === 0) {
+                const rect = ss.getBoundingClientRect();
+                width = rect.width || width;
+                height = rect.height || height;
             }
-        }
+            
+            return { width, height };
+        };
+        
+        const size = getContainerSize();
+        const cx = size.width / 2;
+        const cy = size.height / 2;
         
         const mobile = window.innerWidth <= 768;
         
@@ -171,10 +164,12 @@
         const planets = ss.querySelectorAll('.planet');
         
         function pos(el, c) {
-            const x = cx + Math.cos(c.a) * c.r - el.offsetWidth / 2;
-            const y = cy + Math.sin(c.a) * c.r - el.offsetHeight / 2;
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
+            // 计算行星在轨道上的位置
+            const x = Math.cos(c.a) * c.r;
+            const y = Math.sin(c.a) * c.r;
+            // 相对于容器中心定位，减去行星自身宽高的一半使其居中
+            el.style.left = (cx + x - el.offsetWidth / 2) + 'px';
+            el.style.top = (cy + y - el.offsetHeight / 2) + 'px';
         }
         
         function setOrbit(n, r) {
@@ -197,11 +192,11 @@
         }
         
         function getXY(e) {
-            const r = ss.getBoundingClientRect();
             const t = e.touches ? e.touches[0] : e;
+            const rect = ss.getBoundingClientRect();
             return { 
-                x: t.clientX - r.left - r.width / 2, 
-                y: t.clientY - r.top - r.height / 2 
+                x: t.clientX - rect.left - cx, 
+                y: t.clientY - rect.top - cy
             };
         }
         
