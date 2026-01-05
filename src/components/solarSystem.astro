@@ -121,6 +121,13 @@
         
         const mobile = window.innerWidth <= 768;
         
+        // 行星大小配置（用于计算中心偏移）
+        const planetSizes = mobile ? {
+            mercury: 5, venus: 8, earth: 10, mars: 6, jupiter: 14, saturn: 12
+        } : {
+            mercury: 6, venus: 10, earth: 12, mars: 8, jupiter: 18, saturn: 15
+        };
+        
         // 轨道半径配置
         const cfg = mobile ? {
             mercury: { r: 25, s: 0.025 },
@@ -145,33 +152,13 @@
         const planets = ss.querySelectorAll('.planet');
         
         function pos(el, c) {
-            // 直接计算 left 和 top，减去行星自身宽高的一半使其中心在轨道上
             const x = Math.cos(c.a) * c.r;
             const y = Math.sin(c.a) * c.r;
-            const size = getContainerSize();
-            const cx = size.width / 2;
-            const cy = size.height / 2;
+            const n = el.dataset.planet;
+            const size = planetSizes[n] || 5;
             
-            // 获取行星的宽高
-            const w = el.offsetWidth;
-            const h = el.offsetHeight;
-            
-            el.style.left = (cx + x - w / 2) + 'px';
-            el.style.top = (cy + y - h / 2) + 'px';
-        }
-        
-        function getContainerSize() {
-            const computedStyle = window.getComputedStyle(ss);
-            let width = parseFloat(computedStyle.width);
-            let height = parseFloat(computedStyle.height);
-            
-            if (width === 0 || height === 0) {
-                const rect = ss.getBoundingClientRect();
-                width = rect.width || width;
-                height = rect.height || height;
-            }
-            
-            return { width, height };
+            // 使用 transform 定位，相对于容器中心
+            el.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
         }
         
         function setOrbit(n, r) {
@@ -203,6 +190,20 @@
                 x: t.clientX - rect.left - cx, 
                 y: t.clientY - rect.top - cy
             };
+        }
+        
+        function getContainerSize() {
+            const computedStyle = window.getComputedStyle(ss);
+            let width = parseFloat(computedStyle.width);
+            let height = parseFloat(computedStyle.height);
+            
+            if (width === 0 || height === 0) {
+                const rect = ss.getBoundingClientRect();
+                width = rect.width || width;
+                height = rect.height || height;
+            }
+            
+            return { width, height };
         }
         
         function start(e, p) { 
@@ -247,8 +248,12 @@
             Object.keys(defR).forEach(n => { cfg[n].r = defR[n]; setOrbit(n, defR[n]); });
         });
         
-        // 初始化
-        planets.forEach(p => pos(p, cfg[p.dataset.planet]));
+        // 初始化行星位置
+        planets.forEach(p => {
+            p.style.top = '50%';
+            p.style.left = '50%';
+            pos(p, cfg[p.dataset.planet]);
+        });
         animate();
     }
     
