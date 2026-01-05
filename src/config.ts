@@ -538,7 +538,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 // 看板娘配置
 export const pioConfig: import("./types/config").PioConfig = {
     // 启用看板娘
-    enable: true,
+    enable: false,
     // 模型文件路径
     models: ["/pio/models/pio/model.json"],
     // 看板娘位置
