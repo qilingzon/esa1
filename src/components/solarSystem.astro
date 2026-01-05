@@ -145,15 +145,19 @@
         const planets = ss.querySelectorAll('.planet');
         
         function pos(el, c) {
-            // 直接计算 left 和 top，不使用 transform
+            // 直接计算 left 和 top，减去行星自身宽高的一半使其中心在轨道上
             const x = Math.cos(c.a) * c.r;
             const y = Math.sin(c.a) * c.r;
             const size = getContainerSize();
             const cx = size.width / 2;
             const cy = size.height / 2;
             
-            el.style.left = (cx + x) + 'px';
-            el.style.top = (cy + y) + 'px';
+            // 获取行星的宽高
+            const w = el.offsetWidth;
+            const h = el.offsetHeight;
+            
+            el.style.left = (cx + x - w / 2) + 'px';
+            el.style.top = (cy + y - h / 2) + 'px';
         }
         
         function getContainerSize() {
