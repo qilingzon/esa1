@@ -1,0 +1,224 @@
+---
+/**
+ * 太阳系动画组件
+ * 行星围绕太阳旋转的动画效果
+ */
+---
+
+<div class="solar-system-container">
+    <div class="solar-system">
+        <!-- 太阳 -->
+        <div class="sun"></div>
+        
+        <!-- 水星轨道 -->
+        <div class="orbit orbit-mercury">
+            <div class="planet mercury"></div>
+        </div>
+        
+        <!-- 金星轨道 -->
+        <div class="orbit orbit-venus">
+            <div class="planet venus"></div>
+        </div>
+        
+        <!-- 地球轨道 -->
+        <div class="orbit orbit-earth">
+            <div class="planet earth">
+                <div class="moon"></div>
+            </div>
+        </div>
+        
+        <!-- 火星轨道 -->
+        <div class="orbit orbit-mars">
+            <div class="planet mars"></div>
+        </div>
+        
+        <!-- 木星轨道 -->
+        <div class="orbit orbit-jupiter">
+            <div class="planet jupiter"></div>
+        </div>
+        
+        <!-- 土星轨道 -->
+        <div class="orbit orbit-saturn">
+            <div class="planet saturn">
+                <div class="saturn-ring"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.solar-system-container {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 20, 0.3));
+    position: relative;
+}
+
+.solar-system {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    transform: scale(0.55);
+}
+
+/* 太阳 */
+.sun {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle, #fff700 0%, #ff9500 50%, #ff5500 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 60px #ff9500, 0 0 100px #ff5500;
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 60px #ff9500, 0 0 100px #ff5500; }
+    50% { box-shadow: 0 0 80px #ff9500, 0 0 120px #ff5500; }
+}
+
+/* 轨道基础样式 */
+.orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 行星基础样式 */
+.planet {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+}
+
+/* 水星 */
+.orbit-mercury {
+    width: 80px;
+    height: 80px;
+    animation: orbit 4s linear infinite;
+}
+.mercury {
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(to bottom, #b5b5b5, #8c8c8c);
+}
+
+/* 金星 */
+.orbit-venus {
+    width: 110px;
+    height: 110px;
+    animation: orbit 6s linear infinite;
+}
+.venus {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(to bottom, #ffd699, #cc9933);
+}
+
+/* 地球 */
+.orbit-earth {
+    width: 150px;
+    height: 150px;
+    animation: orbit 10s linear infinite;
+}
+.earth {
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(to bottom, #6b93d6, #4f6d9a);
+    position: relative;
+}
+.moon {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #ccc;
+    border-radius: 50%;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: orbit 2s linear infinite;
+}
+
+/* 火星 */
+.orbit-mars {
+    width: 200px;
+    height: 200px;
+    animation: orbit 15s linear infinite;
+}
+.mars {
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(to bottom, #e27b58, #8b4513);
+}
+
+/* 木星 */
+.orbit-jupiter {
+    width: 280px;
+    height: 280px;
+    animation: orbit 25s linear infinite;
+}
+.jupiter {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(to bottom, #d4a574, #c88b3a, #a67c52);
+}
+
+/* 土星 */
+.orbit-saturn {
+    width: 360px;
+    height: 360px;
+    animation: orbit 35s linear infinite;
+}
+.saturn {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(to bottom, #f4d59e, #c9a227);
+    position: relative;
+}
+.saturn-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotateX(75deg);
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(210, 180, 140, 0.6);
+    border-radius: 50%;
+}
+
+@keyframes orbit {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .solar-system-container {
+        height: 200px;
+    }
+    .solar-system {
+        transform: scale(0.35);
+    }
+}
+
+/* 深色模式优化 */
+:root.dark .solar-system-container {
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 30, 0.5));
+}
+
+:root.dark .orbit {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+</style>

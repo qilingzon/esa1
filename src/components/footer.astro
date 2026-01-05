@@ -4,6 +4,7 @@ import * as path from "node:path";
 
 import { footerConfig, profileConfig } from "@/config";
 import { url } from "@utils/url-utils";
+import SolarSystem from "@components/solarSystem.astro";
 
 
 const currentYear = new Date().getFullYear();
@@ -31,6 +32,9 @@ if (footerConfig.enable) {
     }
 }
 ---
+
+<!-- 太阳系动画 -->
+<SolarSystem />
 
 <!--<div class="border-t border-[var(&#45;&#45;primary)] mx-16 border-dashed py-8 max-w-[var(&#45;&#45;page-width)] flex flex-col items-center justify-center px-6">-->
 <div class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"></div>
