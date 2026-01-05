@@ -206,6 +206,8 @@ function showBannerMode() {
     const fullscreenContainer = document.querySelector('[data-fullscreen-wallpaper]');
     if (fullscreenContainer) {
         fullscreenContainer.classList.add('hidden');
+        fullscreenContainer.classList.add('mobile-fullscreen-wallpaper'); // 恢复手机端专用类
+        fullscreenContainer.classList.remove('opacity-100');
     }
 
     // 显示banner壁纸（通过CSS类控制）
@@ -299,6 +301,7 @@ function showFullscreenMode() {
     if (fullscreenContainer) {
         fullscreenContainer.classList.remove('hidden');
         fullscreenContainer.classList.remove('opacity-0');
+        fullscreenContainer.classList.remove('mobile-fullscreen-wallpaper'); // 移除手机端专用类
         fullscreenContainer.classList.add('opacity-100');
     }
 

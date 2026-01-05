@@ -144,7 +144,7 @@
     }
 }
 
-/* 手机端全屏壁纸 - 滑动后显示 */
+/* 手机端全屏壁纸 - 滑动后显示（仅在 banner 模式下生效） */
 @media (max-width: 1023px) {
     .mobile-fullscreen-wallpaper {
         opacity: 0;
@@ -171,9 +171,23 @@
     }
 }
 
-/* 桌面端隐藏手机端全屏壁纸 */
+/* 桌面端：mobile-fullscreen-wallpaper 类默认隐藏，但通过 JS 切换到全屏模式时会移除 hidden 类显示 */
 @media (min-width: 1024px) {
     .mobile-fullscreen-wallpaper {
-        display: none !important;
+        /* 默认隐藏，等待用户切换到全屏壁纸模式 */
+        opacity: 0;
+        visibility: hidden;
+    }
+    
+    /* 当用户切换到全屏壁纸模式时，JS 会移除 hidden 类并添加 opacity-100 */
+    .mobile-fullscreen-wallpaper.opacity-100 {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* 兼容：当没有 hidden 类时显示 */
+    .mobile-fullscreen-wallpaper:not(.hidden) {
+        opacity: 1;
+        visibility: visible;
     }
 }
