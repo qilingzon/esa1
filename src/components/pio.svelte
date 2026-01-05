@@ -106,5 +106,15 @@ onDestroy(() => {
 {/if}
 
 <style>
-  /* Pio 相关样式将通过外部CSS文件加载 */
+  /* 手机端看板娘缩小并固定在左下角 */
+  @media (max-width: 768px) {
+    .pio-container {
+      transform: scale(0.6);
+      transform-origin: bottom left;
+      position: fixed !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      right: auto !important;
+    }
+  }
 </style>
