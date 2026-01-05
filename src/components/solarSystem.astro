@@ -81,6 +81,8 @@
 [data-orbit="saturn"] { width: 250px; height: 250px; }
 .planet {
     position: absolute;
+    top: 50%;
+    left: 50%;
     border-radius: 50%;
     cursor: grab;
     z-index: 5;
@@ -119,29 +121,9 @@
         const ss = document.getElementById('solar-system');
         if (!ss) return;
         
-        // 获取容器的实际宽高
-        const getContainerSize = () => {
-            const computedStyle = window.getComputedStyle(ss);
-            let width = parseFloat(computedStyle.width);
-            let height = parseFloat(computedStyle.height);
-            
-            // 如果计算值为0，尝试从CSS规则获取
-            if (width === 0 || height === 0) {
-                const rect = ss.getBoundingClientRect();
-                width = rect.width || width;
-                height = rect.height || height;
-            }
-            
-            return { width, height };
-        };
-        
-        const size = getContainerSize();
-        const cx = size.width / 2;
-        const cy = size.height / 2;
-        
         const mobile = window.innerWidth <= 768;
         
-        // 半径 = CSS轨道直径 / 2
+        // 轨道半径配置
         const cfg = mobile ? {
             mercury: { r: 25, s: 0.025 },
             venus: { r: 40, s: 0.018 },
@@ -158,18 +140,17 @@
             saturn: { r: 175, s: 0.004 }
         };
         
+        // 初始化角度
         Object.keys(cfg).forEach(k => cfg[k].a = Math.random() * Math.PI * 2);
         
         let drag = null;
         const planets = ss.querySelectorAll('.planet');
         
         function pos(el, c) {
-            // 计算行星在轨道上的位置
+            // 使用 transform 定位，避免坐标系统问题
             const x = Math.cos(c.a) * c.r;
             const y = Math.sin(c.a) * c.r;
-            // 相对于容器中心定位，减去行星自身宽高的一半使其居中
-            el.style.left = (cx + x - el.offsetWidth / 2) + 'px';
-            el.style.top = (cy + y - el.offsetHeight / 2) + 'px';
+            el.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
         }
         
         function setOrbit(n, r) {
@@ -194,10 +175,27 @@
         function getXY(e) {
             const t = e.touches ? e.touches[0] : e;
             const rect = ss.getBoundingClientRect();
+            const size = getContainerSize();
+            const cx = size.width / 2;
+            const cy = size.height / 2;
             return { 
                 x: t.clientX - rect.left - cx, 
                 y: t.clientY - rect.top - cy
             };
+        }
+        
+        function getContainerSize() {
+            const computedStyle = window.getComputedStyle(ss);
+            let width = parseFloat(computedStyle.width);
+            let height = parseFloat(computedStyle.height);
+            
+            if (width === 0 || height === 0) {
+                const rect = ss.getBoundingClientRect();
+                width = rect.width || width;
+                height = rect.height || height;
+            }
+            
+            return { width, height };
         }
         
         function start(e, p) { 
@@ -251,7 +249,6 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initSolarSystem);
     } else {
-        // 使用setTimeout确保在下一个事件循环中执行
         setTimeout(initSolarSystem, 0);
     }
 })();
