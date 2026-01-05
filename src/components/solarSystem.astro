@@ -81,8 +81,6 @@
 [data-orbit="saturn"] { width: 250px; height: 250px; }
 .planet {
     position: absolute;
-    top: 50%;
-    left: 50%;
     border-radius: 50%;
     cursor: grab;
     z-index: 5;
@@ -147,10 +145,29 @@
         const planets = ss.querySelectorAll('.planet');
         
         function pos(el, c) {
-            // 使用 transform 定位，避免坐标系统问题
+            // 直接计算 left 和 top，不使用 transform
             const x = Math.cos(c.a) * c.r;
             const y = Math.sin(c.a) * c.r;
-            el.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+            const size = getContainerSize();
+            const cx = size.width / 2;
+            const cy = size.height / 2;
+            
+            el.style.left = (cx + x) + 'px';
+            el.style.top = (cy + y) + 'px';
+        }
+        
+        function getContainerSize() {
+            const computedStyle = window.getComputedStyle(ss);
+            let width = parseFloat(computedStyle.width);
+            let height = parseFloat(computedStyle.height);
+            
+            if (width === 0 || height === 0) {
+                const rect = ss.getBoundingClientRect();
+                width = rect.width || width;
+                height = rect.height || height;
+            }
+            
+            return { width, height };
         }
         
         function setOrbit(n, r) {
@@ -182,20 +199,6 @@
                 x: t.clientX - rect.left - cx, 
                 y: t.clientY - rect.top - cy
             };
-        }
-        
-        function getContainerSize() {
-            const computedStyle = window.getComputedStyle(ss);
-            let width = parseFloat(computedStyle.width);
-            let height = parseFloat(computedStyle.height);
-            
-            if (width === 0 || height === 0) {
-                const rect = ss.getBoundingClientRect();
-                width = rect.width || width;
-                height = rect.height || height;
-            }
-            
-            return { width, height };
         }
         
         function start(e, p) { 
