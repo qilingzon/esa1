@@ -157,6 +157,7 @@
     
     var drag = null;
     var planetEls = ss.querySelectorAll('.planet');
+    var animationRunning = false;
     
     // 设置行星位置
     function setPos(el, p) {
@@ -181,6 +182,8 @@
     
     // 动画循环
     function animate() {
+        if (!animationRunning) return;
+        
         var i, el, name, p;
         for (i = 0; i < planetEls.length; i++) {
             el = planetEls[i];
@@ -194,12 +197,33 @@
         requestAnimationFrame(animate);
     }
     
-    // 获取鼠标坐标
+    // 启动动画
+    function startAnimation() {
+        if (!animationRunning) {
+            animationRunning = true;
+            animate();
+        }
+    }
+    
+    // 停止动画
+    function stopAnimation() {
+        animationRunning = false;
+    }
+    
+    // 获取鼠标/触摸坐标
     function getXY(e) {
         var rect = ss.getBoundingClientRect();
+        var clientX, clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
         return {
-            x: e.clientX - rect.left - cx,
-            y: e.clientY - rect.top - cy
+            x: clientX - rect.left - cx,
+            y: clientY - rect.top - cy
         };
     }
     
@@ -255,7 +279,7 @@
         }
     }
     
-    // 初始化
+    // 初始化行星位置
     var i, el, name;
     for (i = 0; i < planetEls.length; i++) {
         el = planetEls[i];
@@ -265,7 +289,30 @@
         }
     }
     
-    // 启动动画
-    animate();
+    // 页面可见性变化时控制动画
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAnimation();
+        } else {
+            startAnimation();
+        }
+    });
+    
+    // 使用 IntersectionObserver 检测组件是否在视口中
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    startAnimation();
+                } else {
+                    stopAnimation();
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(ss);
+    } else {
+        // 不支持 IntersectionObserver 的浏览器直接启动动画
+        startAnimation();
+    }
 })();
 </script>
