@@ -1,25 +1,19 @@
 ---
 /**
- * 太阳系动画组件 - 简化版
+ * 太阳系动画组件 - CSS动画版
  */
 ---
 
 <div class="solar-system-wrapper">
     <div class="stars"></div>
     <div class="solar-system" id="solar-system">
-        <div class="sun" id="sun" title="点击重置"></div>
-        <div class="orbit" data-orbit="mercury"></div>
-        <div class="planet mercury" data-planet="mercury"></div>
-        <div class="orbit" data-orbit="venus"></div>
-        <div class="planet venus" data-planet="venus"></div>
-        <div class="orbit" data-orbit="earth"></div>
-        <div class="planet earth" data-planet="earth"></div>
-        <div class="orbit" data-orbit="mars"></div>
-        <div class="planet mars" data-planet="mars"></div>
-        <div class="orbit" data-orbit="jupiter"></div>
-        <div class="planet jupiter" data-planet="jupiter"></div>
-        <div class="orbit" data-orbit="saturn"></div>
-        <div class="planet saturn" data-planet="saturn"></div>
+        <div class="sun" id="sun"></div>
+        <div class="orbit orbit-mercury"><div class="planet mercury"></div></div>
+        <div class="orbit orbit-venus"><div class="planet venus"></div></div>
+        <div class="orbit orbit-earth"><div class="planet earth"></div></div>
+        <div class="orbit orbit-mars"><div class="planet mars"></div></div>
+        <div class="orbit orbit-jupiter"><div class="planet jupiter"></div></div>
+        <div class="orbit orbit-saturn"><div class="planet saturn"></div></div>
     </div>
 </div>
 
@@ -35,7 +29,7 @@
 }
 .stars {
     position: absolute;
-    inset: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-image: 
         radial-gradient(1px 1px at 20px 30px, white, transparent),
         radial-gradient(1px 1px at 80px 60px, white, transparent),
@@ -63,7 +57,6 @@
     background: radial-gradient(circle, #fff700, #ff9500, #ff5500);
     border-radius: 50%;
     box-shadow: 0 0 20px #ff9500;
-    cursor: pointer;
     z-index: 10;
 }
 .orbit {
@@ -72,174 +65,47 @@
     left: 50%;
     border: 1px dashed rgba(255,255,255,0.15);
     border-radius: 50%;
-    pointer-events: none;
+    animation: orbit-rotate linear infinite;
 }
-[data-orbit="mercury"] { width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; }
-[data-orbit="venus"] { width: 80px; height: 80px; margin-left: -40px; margin-top: -40px; }
-[data-orbit="earth"] { width: 115px; height: 115px; margin-left: -57.5px; margin-top: -57.5px; }
-[data-orbit="mars"] { width: 150px; height: 150px; margin-left: -75px; margin-top: -75px; }
-[data-orbit="jupiter"] { width: 195px; height: 195px; margin-left: -97.5px; margin-top: -97.5px; }
-[data-orbit="saturn"] { width: 250px; height: 250px; margin-left: -125px; margin-top: -125px; }
+.orbit-mercury { width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; animation-duration: 4s; }
+.orbit-venus { width: 80px; height: 80px; margin-left: -40px; margin-top: -40px; animation-duration: 6s; }
+.orbit-earth { width: 115px; height: 115px; margin-left: -57.5px; margin-top: -57.5px; animation-duration: 8s; }
+.orbit-mars { width: 150px; height: 150px; margin-left: -75px; margin-top: -75px; animation-duration: 12s; }
+.orbit-jupiter { width: 195px; height: 195px; margin-left: -97.5px; margin-top: -97.5px; animation-duration: 18s; }
+.orbit-saturn { width: 250px; height: 250px; margin-left: -125px; margin-top: -125px; animation-duration: 25s; }
+
 .planet {
     position: absolute;
     border-radius: 50%;
-    cursor: grab;
     z-index: 5;
-    touch-action: none;
 }
-.planet.dragging { cursor: grabbing; box-shadow: 0 0 12px rgba(255,255,255,0.8); }
-.mercury { width: 5px; height: 5px; background: #b5b5b5; }
-.venus { width: 8px; height: 8px; background: #ffd699; }
-.earth { width: 10px; height: 10px; background: #6b93d6; }
-.mars { width: 6px; height: 6px; background: #e27b58; }
-.jupiter { width: 14px; height: 14px; background: linear-gradient(135deg, #d4a574, #c88b3a); }
-.saturn { width: 12px; height: 12px; background: #f4d59e; }
+.mercury { width: 5px; height: 5px; background: #b5b5b5; top: -2.5px; left: 50%; margin-left: -2.5px; }
+.venus { width: 8px; height: 8px; background: #ffd699; top: -4px; left: 50%; margin-left: -4px; }
+.earth { width: 10px; height: 10px; background: #6b93d6; top: -5px; left: 50%; margin-left: -5px; }
+.mars { width: 6px; height: 6px; background: #e27b58; top: -3px; left: 50%; margin-left: -3px; }
+.jupiter { width: 14px; height: 14px; background: linear-gradient(135deg, #d4a574, #c88b3a); top: -7px; left: 50%; margin-left: -7px; }
+.saturn { width: 12px; height: 12px; background: #f4d59e; top: -6px; left: 50%; margin-left: -6px; }
+
+@keyframes orbit-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
 @media (min-width: 769px) {
     .solar-system-wrapper { height: 350px; }
     .solar-system { width: 400px; height: 400px; margin-left: -200px; margin-top: -200px; }
     .sun { width: 32px; height: 32px; margin-left: -16px; margin-top: -16px; }
-    [data-orbit="mercury"] { width: 70px; height: 70px; margin-left: -35px; margin-top: -35px; }
-    [data-orbit="venus"] { width: 110px; height: 110px; margin-left: -55px; margin-top: -55px; }
-    [data-orbit="earth"] { width: 160px; height: 160px; margin-left: -80px; margin-top: -80px; }
-    [data-orbit="mars"] { width: 210px; height: 210px; margin-left: -105px; margin-top: -105px; }
-    [data-orbit="jupiter"] { width: 275px; height: 275px; margin-left: -137.5px; margin-top: -137.5px; }
-    [data-orbit="saturn"] { width: 350px; height: 350px; margin-left: -175px; margin-top: -175px; }
-    .mercury { width: 6px; height: 6px; }
-    .venus { width: 10px; height: 10px; }
-    .earth { width: 12px; height: 12px; }
-    .mars { width: 8px; height: 8px; }
-    .jupiter { width: 18px; height: 18px; }
-    .saturn { width: 15px; height: 15px; }
+    .orbit-mercury { width: 70px; height: 70px; margin-left: -35px; margin-top: -35px; }
+    .orbit-venus { width: 110px; height: 110px; margin-left: -55px; margin-top: -55px; }
+    .orbit-earth { width: 160px; height: 160px; margin-left: -80px; margin-top: -80px; }
+    .orbit-mars { width: 210px; height: 210px; margin-left: -105px; margin-top: -105px; }
+    .orbit-jupiter { width: 275px; height: 275px; margin-left: -137.5px; margin-top: -137.5px; }
+    .orbit-saturn { width: 350px; height: 350px; margin-left: -175px; margin-top: -175px; }
+    .mercury { width: 6px; height: 6px; top: -3px; margin-left: -3px; }
+    .venus { width: 10px; height: 10px; top: -5px; margin-left: -5px; }
+    .earth { width: 12px; height: 12px; top: -6px; margin-left: -6px; }
+    .mars { width: 8px; height: 8px; top: -4px; margin-left: -4px; }
+    .jupiter { width: 18px; height: 18px; top: -9px; margin-left: -9px; }
+    .saturn { width: 15px; height: 15px; top: -7.5px; margin-left: -7.5px; }
 }
 </style>
-
-<script>
-(function() {
-    const ss = document.getElementById('solar-system');
-    if (!ss) return;
-    
-    const mobile = window.innerWidth <= 768;
-    
-    // 轨道半径配置
-    const cfg = mobile ? {
-        mercury: { r: 25, s: 0.025, a: 0 },
-        venus: { r: 40, s: 0.018, a: 0 },
-        earth: { r: 57.5, s: 0.012, a: 0 },
-        mars: { r: 75, s: 0.009, a: 0 },
-        jupiter: { r: 97.5, s: 0.006, a: 0 },
-        saturn: { r: 125, s: 0.004, a: 0 }
-    } : {
-        mercury: { r: 35, s: 0.025, a: 0 },
-        venus: { r: 55, s: 0.018, a: 0 },
-        earth: { r: 80, s: 0.012, a: 0 },
-        mars: { r: 105, s: 0.009, a: 0 },
-        jupiter: { r: 137.5, s: 0.006, a: 0 },
-        saturn: { r: 175, s: 0.004, a: 0 }
-    };
-    
-    // 初始化角度
-    Object.keys(cfg).forEach(k => cfg[k].a = Math.random() * Math.PI * 2);
-    
-    let drag = null;
-    const planets = ss.querySelectorAll('.planet');
-    
-    // 行星大小配置
-    const sizes = mobile ? {
-        mercury: 5, venus: 8, earth: 10, mars: 6, jupiter: 14, saturn: 12
-    } : {
-        mercury: 6, venus: 10, earth: 12, mars: 8, jupiter: 18, saturn: 15
-    };
-    
-    // 容器中心坐标
-    const containerSize = mobile ? 280 : 400;
-    const cx = containerSize / 2;
-    const cy = containerSize / 2;
-    
-    function pos(el, c) {
-        const n = el.dataset.planet;
-        const size = sizes[n] || 5;
-        const x = Math.cos(c.a) * c.r;
-        const y = Math.sin(c.a) * c.r;
-        // 直接用像素值定位，减去行星宽度的一半使其中心在轨道上
-        el.style.left = (cx + x - size / 2) + 'px';
-        el.style.top = (cy + y - size / 2) + 'px';
-    }
-    
-    function setOrbit(n, r) {
-        const o = ss.querySelector(`[data-orbit="${n}"]`);
-        if (o) { 
-            o.style.width = r * 2 + 'px'; 
-            o.style.height = r * 2 + 'px'; 
-            o.style.marginLeft = -r + 'px';
-            o.style.marginTop = -r + 'px';
-        }
-    }
-    
-    function animate() {
-        planets.forEach(p => {
-            const n = p.dataset.planet, c = cfg[n];
-            if (p !== drag) { 
-                c.a += c.s; 
-                pos(p, c); 
-            }
-        });
-        requestAnimationFrame(animate);
-    }
-    
-    function getXY(e) {
-        const t = e.touches ? e.touches[0] : e;
-        const rect = ss.getBoundingClientRect();
-        return { 
-            x: t.clientX - rect.left - rect.width / 2, 
-            y: t.clientY - rect.top - rect.height / 2
-        };
-    }
-    
-    function start(e, p) { 
-        e.preventDefault(); 
-        drag = p; 
-        p.classList.add('dragging'); 
-    }
-    
-    function move(e) {
-        if (!drag) return;
-        e.preventDefault();
-        const xy = getXY(e), n = drag.dataset.planet, c = cfg[n];
-        const max = mobile ? 125 : 175;
-        c.r = Math.max(20, Math.min(max, Math.sqrt(xy.x * xy.x + xy.y * xy.y)));
-        c.a = Math.atan2(xy.y, xy.x);
-        pos(drag, c);
-        setOrbit(n, c.r);
-    }
-    
-    function end() { 
-        if (drag) { 
-            drag.classList.remove('dragging'); 
-            drag = null; 
-        } 
-    }
-    
-    planets.forEach(p => {
-        p.addEventListener('mousedown', e => start(e, p));
-        p.addEventListener('touchstart', e => start(e, p), { passive: false });
-    });
-    document.addEventListener('mousemove', move);
-    document.addEventListener('touchmove', move, { passive: false });
-    document.addEventListener('mouseup', end);
-    document.addEventListener('touchend', end);
-    
-    // 重置
-    const defR = mobile 
-        ? { mercury: 25, venus: 40, earth: 57.5, mars: 75, jupiter: 97.5, saturn: 125 }
-        : { mercury: 35, venus: 55, earth: 80, mars: 105, jupiter: 137.5, saturn: 175 };
-    
-    document.getElementById('sun')?.addEventListener('click', () => {
-        Object.keys(defR).forEach(n => { cfg[n].r = defR[n]; setOrbit(n, defR[n]); });
-    });
-    
-    // 初始化
-    planets.forEach(p => pos(p, cfg[p.dataset.planet]));
-    animate();
-})();
-</script>
