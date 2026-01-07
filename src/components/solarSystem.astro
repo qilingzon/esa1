@@ -147,8 +147,13 @@
     function pos(el, c) {
         const x = Math.cos(c.a) * c.r;
         const y = Math.sin(c.a) * c.r;
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
+        // 获取行星的 margin 值
+        const style = window.getComputedStyle(el);
+        const marginLeft = parseFloat(style.marginLeft) || 0;
+        const marginTop = parseFloat(style.marginTop) || 0;
+        // 设置 left 和 top，需要减去 margin 的影响
+        el.style.left = (x - marginLeft) + 'px';
+        el.style.top = (y - marginTop) + 'px';
     }
     
     function setOrbit(n, r) {
