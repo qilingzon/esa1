@@ -123,29 +123,37 @@
     var ss = document.getElementById('solar-system');
     if (!ss) return;
     
-    var mobile = window.innerWidth <= 768;
+    var w = window.innerWidth;
+    var mobile = w <= 768;
     var containerSize = mobile ? 280 : 400;
     var cx = containerSize / 2;
     var cy = containerSize / 2;
     
     // 行星配置
-    var planets = {
-        mercury: { r: mobile ? 25 : 35, s: 0.025, a: Math.random() * 6.28, size: mobile ? 5 : 6 },
-        venus: { r: mobile ? 40 : 55, s: 0.018, a: Math.random() * 6.28, size: mobile ? 8 : 10 },
-        earth: { r: mobile ? 57.5 : 80, s: 0.012, a: Math.random() * 6.28, size: mobile ? 10 : 12 },
-        mars: { r: mobile ? 75 : 105, s: 0.009, a: Math.random() * 6.28, size: mobile ? 6 : 8 },
-        jupiter: { r: mobile ? 97.5 : 137.5, s: 0.006, a: Math.random() * 6.28, size: mobile ? 14 : 18 },
-        saturn: { r: mobile ? 125 : 175, s: 0.004, a: Math.random() * 6.28, size: mobile ? 12 : 15 }
-    };
+    var cfg = {};
+    if (mobile) {
+        cfg.mercury = { r: 25, s: 0.025, a: 0, size: 5 };
+        cfg.venus = { r: 40, s: 0.018, a: 1, size: 8 };
+        cfg.earth = { r: 57.5, s: 0.012, a: 2, size: 10 };
+        cfg.mars = { r: 75, s: 0.009, a: 3, size: 6 };
+        cfg.jupiter = { r: 97.5, s: 0.006, a: 4, size: 14 };
+        cfg.saturn = { r: 125, s: 0.004, a: 5, size: 12 };
+    } else {
+        cfg.mercury = { r: 35, s: 0.025, a: 0, size: 6 };
+        cfg.venus = { r: 55, s: 0.018, a: 1, size: 10 };
+        cfg.earth = { r: 80, s: 0.012, a: 2, size: 12 };
+        cfg.mars = { r: 105, s: 0.009, a: 3, size: 8 };
+        cfg.jupiter = { r: 137.5, s: 0.006, a: 4, size: 18 };
+        cfg.saturn = { r: 175, s: 0.004, a: 5, size: 15 };
+    }
     
-    var defaultR = {
-        mercury: mobile ? 25 : 35,
-        venus: mobile ? 40 : 55,
-        earth: mobile ? 57.5 : 80,
-        mars: mobile ? 75 : 105,
-        jupiter: mobile ? 97.5 : 137.5,
-        saturn: mobile ? 125 : 175
-    };
+    var defR = {};
+    defR.mercury = cfg.mercury.r;
+    defR.venus = cfg.venus.r;
+    defR.earth = cfg.earth.r;
+    defR.mars = cfg.mars.r;
+    defR.jupiter = cfg.jupiter.r;
+    defR.saturn = cfg.saturn.r;
     
     var drag = null;
     var planetEls = ss.querySelectorAll('.planet');
@@ -173,11 +181,12 @@
     
     // 动画循环
     function animate() {
-        for (var i = 0; i < planetEls.length; i++) {
-            var el = planetEls[i];
-            var name = el.getAttribute('data-planet');
-            var p = planets[name];
-            if (el !== drag) {
+        var i, el, name, p;
+        for (i = 0; i < planetEls.length; i++) {
+            el = planetEls[i];
+            name = el.getAttribute('data-planet');
+            p = cfg[name];
+            if (el !== drag && p) {
                 p.a = p.a + p.s;
                 setPos(el, p);
             }
@@ -185,13 +194,12 @@
         requestAnimationFrame(animate);
     }
     
-    // 获取触摸/鼠标坐标
+    // 获取鼠标坐标
     function getXY(e) {
-        var touch = e.touches ? e.touches[0] : e;
         var rect = ss.getBoundingClientRect();
         return {
-            x: touch.clientX - rect.left - cx,
-            y: touch.clientY - rect.top - cy
+            x: e.clientX - rect.left - cx,
+            y: e.clientY - rect.top - cy
         };
     }
     
@@ -199,7 +207,7 @@
     function startDrag(e) {
         e.preventDefault();
         drag = this;
-        this.classList.add('dragging');
+        this.className = this.className + ' dragging';
     }
     
     // 移动
@@ -208,7 +216,7 @@
         e.preventDefault();
         var xy = getXY(e);
         var name = drag.getAttribute('data-planet');
-        var p = planets[name];
+        var p = cfg[name];
         var maxR = mobile ? 125 : 175;
         var dist = Math.sqrt(xy.x * xy.x + xy.y * xy.y);
         p.r = Math.max(20, Math.min(maxR, dist));
@@ -220,39 +228,44 @@
     // 结束拖拽
     function endDrag() {
         if (drag) {
-            drag.classList.remove('dragging');
+            drag.className = drag.className.replace(' dragging', '');
             drag = null;
         }
     }
     
     // 只在桌面端启用拖拽功能
     if (!mobile) {
-        // 绑定事件
-        for (var i = 0; i < planetEls.length; i++) {
-            planetEls[i].addEventListener('mousedown', startDrag);
+        var i;
+        for (i = 0; i < planetEls.length; i++) {
+            planetEls[i].onmousedown = startDrag;
         }
-        document.addEventListener('mousemove', moveDrag);
-        document.addEventListener('mouseup', endDrag);
+        document.onmousemove = moveDrag;
+        document.onmouseup = endDrag;
         
         // 重置
         var sun = document.getElementById('sun');
         if (sun) {
-            sun.addEventListener('click', function() {
-                for (var name in defaultR) {
-                    planets[name].r = defaultR[name];
-                    setOrbit(name, defaultR[name]);
+            sun.onclick = function() {
+                var name;
+                for (name in defR) {
+                    cfg[name].r = defR[name];
+                    setOrbit(name, defR[name]);
                 }
-            });
+            };
         }
     }
     
     // 初始化
-    for (var i = 0; i < planetEls.length; i++) {
-        var el = planetEls[i];
-        var name = el.getAttribute('data-planet');
-        setPos(el, planets[name]);
+    var i, el, name;
+    for (i = 0; i < planetEls.length; i++) {
+        el = planetEls[i];
+        name = el.getAttribute('data-planet');
+        if (cfg[name]) {
+            setPos(el, cfg[name]);
+        }
     }
     
+    // 启动动画
     animate();
 })();
 </script>
