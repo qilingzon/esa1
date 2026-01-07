@@ -84,10 +84,14 @@
 .planet {
     position: absolute;
     border-radius: 50%;
-    cursor: grab;
     z-index: 5;
 }
 .planet.dragging { cursor: grabbing; box-shadow: 0 0 12px rgba(255,255,255,0.8); }
+
+/* 桌面端显示拖拽光标 */
+@media (min-width: 769px) {
+    .planet { cursor: grab; }
+}
 [data-planet="mercury"] { width: 5px; height: 5px; background: #b5b5b5; }
 [data-planet="venus"] { width: 8px; height: 8px; background: #ffd699; }
 [data-planet="earth"] { width: 10px; height: 10px; background: #6b93d6; }
@@ -221,25 +225,25 @@
         }
     }
     
-    // 绑定事件
-    for (var i = 0; i < planetEls.length; i++) {
-        planetEls[i].addEventListener('mousedown', startDrag);
-        planetEls[i].addEventListener('touchstart', startDrag, { passive: false });
-    }
-    document.addEventListener('mousemove', moveDrag);
-    document.addEventListener('touchmove', moveDrag, { passive: false });
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchend', endDrag);
-    
-    // 重置
-    var sun = document.getElementById('sun');
-    if (sun) {
-        sun.addEventListener('click', function() {
-            for (var name in defaultR) {
-                planets[name].r = defaultR[name];
-                setOrbit(name, defaultR[name]);
-            }
-        });
+    // 只在桌面端启用拖拽功能
+    if (!mobile) {
+        // 绑定事件
+        for (var i = 0; i < planetEls.length; i++) {
+            planetEls[i].addEventListener('mousedown', startDrag);
+        }
+        document.addEventListener('mousemove', moveDrag);
+        document.addEventListener('mouseup', endDrag);
+        
+        // 重置
+        var sun = document.getElementById('sun');
+        if (sun) {
+            sun.addEventListener('click', function() {
+                for (var name in defaultR) {
+                    planets[name].r = defaultR[name];
+                    setOrbit(name, defaultR[name]);
+                }
+            });
+        }
     }
     
     // 初始化
