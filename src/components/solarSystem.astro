@@ -82,8 +82,6 @@
 [data-orbit="saturn"] { width: 250px; height: 250px; margin-left: -125px; margin-top: -125px; }
 .planet {
     position: absolute;
-    top: 50%;
-    left: 50%;
     border-radius: 50%;
     cursor: grab;
     z-index: 5;
@@ -146,12 +144,17 @@
     let drag = null;
     const planets = ss.querySelectorAll('.planet');
     
+    // 容器中心坐标
+    const containerSize = mobile ? 280 : 400;
+    const cx = containerSize / 2;
+    const cy = containerSize / 2;
+    
     function pos(el, c) {
         const x = Math.cos(c.a) * c.r;
         const y = Math.sin(c.a) * c.r;
-        // 直接设置 left 和 top，margin 已经在 CSS 中处理了居中
-        el.style.left = 'calc(50% + ' + x + 'px)';
-        el.style.top = 'calc(50% + ' + y + 'px)';
+        // 直接用像素值定位，相对于容器中心
+        el.style.left = (cx + x) + 'px';
+        el.style.top = (cy + y) + 'px';
     }
     
     function setOrbit(n, r) {
