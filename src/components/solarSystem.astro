@@ -82,6 +82,8 @@
 [data-orbit="saturn"] { width: 250px; height: 250px; margin-left: -125px; margin-top: -125px; }
 .planet {
     position: absolute;
+    top: 50%;
+    left: 50%;
     border-radius: 50%;
     cursor: grab;
     z-index: 5;
@@ -147,13 +149,9 @@
     function pos(el, c) {
         const x = Math.cos(c.a) * c.r;
         const y = Math.sin(c.a) * c.r;
-        // 获取行星的 margin 值
-        const style = window.getComputedStyle(el);
-        const marginLeft = parseFloat(style.marginLeft) || 0;
-        const marginTop = parseFloat(style.marginTop) || 0;
-        // 设置 left 和 top，需要减去 margin 的影响
-        el.style.left = (x - marginLeft) + 'px';
-        el.style.top = (y - marginTop) + 'px';
+        // 直接设置 left 和 top，margin 已经在 CSS 中处理了居中
+        el.style.left = 'calc(50% + ' + x + 'px)';
+        el.style.top = 'calc(50% + ' + y + 'px)';
     }
     
     function setOrbit(n, r) {
