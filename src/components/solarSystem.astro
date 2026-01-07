@@ -88,12 +88,12 @@
     touch-action: none;
 }
 .planet.dragging { cursor: grabbing; box-shadow: 0 0 12px rgba(255,255,255,0.8); }
-.mercury { width: 5px; height: 5px; margin-left: -2.5px; margin-top: -2.5px; background: #b5b5b5; }
-.venus { width: 8px; height: 8px; margin-left: -4px; margin-top: -4px; background: #ffd699; }
-.earth { width: 10px; height: 10px; margin-left: -5px; margin-top: -5px; background: #6b93d6; }
-.mars { width: 6px; height: 6px; margin-left: -3px; margin-top: -3px; background: #e27b58; }
-.jupiter { width: 14px; height: 14px; margin-left: -7px; margin-top: -7px; background: linear-gradient(135deg, #d4a574, #c88b3a); }
-.saturn { width: 12px; height: 12px; margin-left: -6px; margin-top: -6px; background: #f4d59e; }
+.mercury { width: 5px; height: 5px; background: #b5b5b5; }
+.venus { width: 8px; height: 8px; background: #ffd699; }
+.earth { width: 10px; height: 10px; background: #6b93d6; }
+.mars { width: 6px; height: 6px; background: #e27b58; }
+.jupiter { width: 14px; height: 14px; background: linear-gradient(135deg, #d4a574, #c88b3a); }
+.saturn { width: 12px; height: 12px; background: #f4d59e; }
 
 @media (min-width: 769px) {
     .solar-system-wrapper { height: 350px; }
@@ -105,12 +105,12 @@
     [data-orbit="mars"] { width: 210px; height: 210px; margin-left: -105px; margin-top: -105px; }
     [data-orbit="jupiter"] { width: 275px; height: 275px; margin-left: -137.5px; margin-top: -137.5px; }
     [data-orbit="saturn"] { width: 350px; height: 350px; margin-left: -175px; margin-top: -175px; }
-    .mercury { width: 6px; height: 6px; margin-left: -3px; margin-top: -3px; }
-    .venus { width: 10px; height: 10px; margin-left: -5px; margin-top: -5px; }
-    .earth { width: 12px; height: 12px; margin-left: -6px; margin-top: -6px; }
-    .mars { width: 8px; height: 8px; margin-left: -4px; margin-top: -4px; }
-    .jupiter { width: 18px; height: 18px; margin-left: -9px; margin-top: -9px; }
-    .saturn { width: 15px; height: 15px; margin-left: -7.5px; margin-top: -7.5px; }
+    .mercury { width: 6px; height: 6px; }
+    .venus { width: 10px; height: 10px; }
+    .earth { width: 12px; height: 12px; }
+    .mars { width: 8px; height: 8px; }
+    .jupiter { width: 18px; height: 18px; }
+    .saturn { width: 15px; height: 15px; }
 }
 </style>
 
@@ -144,17 +144,26 @@
     let drag = null;
     const planets = ss.querySelectorAll('.planet');
     
+    // 行星大小配置
+    const sizes = mobile ? {
+        mercury: 5, venus: 8, earth: 10, mars: 6, jupiter: 14, saturn: 12
+    } : {
+        mercury: 6, venus: 10, earth: 12, mars: 8, jupiter: 18, saturn: 15
+    };
+    
     // 容器中心坐标
     const containerSize = mobile ? 280 : 400;
     const cx = containerSize / 2;
     const cy = containerSize / 2;
     
     function pos(el, c) {
+        const n = el.dataset.planet;
+        const size = sizes[n] || 5;
         const x = Math.cos(c.a) * c.r;
         const y = Math.sin(c.a) * c.r;
-        // 直接用像素值定位，相对于容器中心
-        el.style.left = (cx + x) + 'px';
-        el.style.top = (cy + y) + 'px';
+        // 直接用像素值定位，减去行星宽度的一半使其中心在轨道上
+        el.style.left = (cx + x - size / 2) + 'px';
+        el.style.top = (cy + y - size / 2) + 'px';
     }
     
     function setOrbit(n, r) {
