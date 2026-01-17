@@ -26,11 +26,14 @@ if (footerConfig.enable) {
             customFooterHtml = fs.readFileSync(footerConfigPath, "utf-8");
             // 移除HTML注释
             customFooterHtml = customFooterHtml.replace(/<!--[\s\S]*?-->/g, "").trim();
+            console.log("FooterConfig.html 读取成功，长度:", customFooterHtml.length);
+            console.log("内容预览:", customFooterHtml.substring(0, 100));
         } catch (error) {
             console.warn("FooterConfig.html文件读取失败:", error.message);
         }
     }
 }
+console.log("customFooterHtml 最终值:", customFooterHtml ? "有内容" : "空");
 ---
 
 <!-- 太阳系动画 -->
