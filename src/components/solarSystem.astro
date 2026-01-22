@@ -314,5 +314,12 @@
         // 不支持 IntersectionObserver 的浏览器直接启动动画
         startAnimation();
     }
+    
+    // 确保动画在页面加载后立即启动（针对手机端）
+    setTimeout(function() {
+        if (!animationRunning) {
+            startAnimation();
+        }
+    }, 100);
 })();
 </script>
