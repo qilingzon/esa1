@@ -58,8 +58,11 @@
       const btn = document.createElement('button');
       btn.className = 'refresh-btn';
       btn.textContent = '🔄 刷新页面';
-      btn.onclick = () => {
-        window.location.reload();
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 强制刷新，清除缓存
+        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
       };
       
       container.appendChild(btn);
@@ -662,8 +665,24 @@
           refreshBtn.className = 'refresh-button';
           refreshBtn.textContent = '刷新页面重试';
           refreshBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;';
-          refreshBtn.onclick = () => window.location.reload();
+          refreshBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+          };
           msg.appendChild(refreshBtn);
+        }
+      });
+      
+      // 同时修改已存在的刷新按钮
+      document.querySelectorAll('button').forEach(btn => {
+        const text = btn.textContent?.trim() || '';
+        if (text.includes('刷新') || text.includes('重试') || text.includes('Retry')) {
+          btn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
+          };
         }
       });
     });
