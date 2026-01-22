@@ -25,10 +25,12 @@
         bottom: 20px;
         right: 20px;
         z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
-      .refresh-btn {
+      .refresh-btn, .logout-btn {
         padding: 10px 20px;
-        background: #0066cc;
         color: white;
         border: none;
         border-radius: 6px;
@@ -36,36 +38,68 @@
         font-size: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         transition: all 0.3s;
+        white-space: nowrap;
+      }
+      .refresh-btn {
+        background: #0066cc;
       }
       .refresh-btn:hover {
         background: #0052a3;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       }
-      .refresh-btn:active {
+      .logout-btn {
+        background: #dc3545;
+      }
+      .logout-btn:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      .refresh-btn:active, .logout-btn:active {
         transform: translateY(0);
       }
     `;
     document.head.appendChild(style);
 
-    // 添加刷新按钮到页面
+    // 添加刷新和退出登录按钮到页面
     const addRefreshButton = () => {
       if (document.querySelector('.refresh-btn-container')) return;
       
       const container = document.createElement('div');
       container.className = 'refresh-btn-container';
       
-      const btn = document.createElement('button');
-      btn.className = 'refresh-btn';
-      btn.textContent = '🔄 刷新页面';
-      btn.onclick = (e) => {
+      // 退出登录按钮
+      const logoutBtn = document.createElement('button');
+      logoutBtn.className = 'logout-btn';
+      logoutBtn.textContent = '🚪 退出登录';
+      logoutBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 清除所有本地存储
+        localStorage.clear();
+        sessionStorage.clear();
+        // 清除所有 cookies
+        document.cookie.split(";").forEach(c => {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        // 强制刷新回到登录页
+        window.location.href = window.location.pathname + '?t=' + Date.now();
+      };
+      
+      // 刷新按钮
+      const refreshBtn = document.createElement('button');
+      refreshBtn.className = 'refresh-btn';
+      refreshBtn.textContent = '🔄 刷新页面';
+      refreshBtn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         // 强制刷新，清除缓存
         window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
       };
       
-      container.appendChild(btn);
+      container.appendChild(logoutBtn);
+      container.appendChild(refreshBtn);
       document.body.appendChild(container);
     };
 
