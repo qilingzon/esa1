@@ -588,6 +588,21 @@
     const observer = new MutationObserver(() => {
       hideOAuthButton();
       translateUI();
+      
+      // 检测登录错误并添加刷新按钮
+      const errorMessages = document.querySelectorAll('[role="alert"], .error, [class*="error"]');
+      errorMessages.forEach(msg => {
+        const text = msg.textContent?.toLowerCase() || '';
+        if ((text.includes('error') || text.includes('错误') || text.includes('failed') || text.includes('失败')) && 
+            !msg.querySelector('.refresh-button')) {
+          const refreshBtn = document.createElement('button');
+          refreshBtn.className = 'refresh-button';
+          refreshBtn.textContent = '刷新页面重试';
+          refreshBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;';
+          refreshBtn.onclick = () => window.location.reload();
+          msg.appendChild(refreshBtn);
+        }
+      });
     });
 
     // 页面加载后开始观察
@@ -596,6 +611,22 @@
       [500, 1000, 2000, 3000, 5000].forEach(delay => {
         setTimeout(() => { hideOAuthButton(); translateUI(); }, delay);
       });
+    });
+    
+    // 监听登录失败事件
+    window.addEventListener('error', (e) => {
+      console.error('登录错误:', e);
+      // 3秒后自动启用刷新功能
+      setTimeout(() => {
+        const loginForm = document.querySelector('form, [role="form"]');
+        if (loginForm && !document.querySelector('.auto-refresh-hint')) {
+          const hint = document.createElement('div');
+          hint.className = 'auto-refresh-hint';
+          hint.textContent = '如果无法登录，请刷新页面重试';
+          hint.style.cssText = 'margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; color: #856404; text-align: center;';
+          loginForm.appendChild(hint);
+        }
+      }, 3000);
     });
   </script>
 </body>
