@@ -17,62 +17,29 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
-    // 添加全局刷新按钮样式
-    const style = document.createElement('style');
-    style.textContent = `
-      .refresh-btn-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .refresh-btn, .logout-btn {
-        padding: 10px 20px;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        transition: all 0.3s;
-        white-space: nowrap;
-      }
-      .refresh-btn {
-        background: #0066cc;
-      }
-      .refresh-btn:hover {
-        background: #0052a3;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      }
-      .logout-btn {
-        background: #dc3545;
-      }
-      .logout-btn:hover {
-        background: #c82333;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      }
-      .refresh-btn:active, .logout-btn:active {
-        transform: translateY(0);
-      }
-    `;
-    document.head.appendChild(style);
-
-    // 添加刷新和退出登录按钮到页面
-    const addRefreshButton = () => {
-      if (document.querySelector('.refresh-btn-container')) return;
+    // 添加退出登录按钮到页面
+    const addLogoutButton = () => {
+      if (document.querySelector('.logout-btn-container')) return;
       
       const container = document.createElement('div');
-      container.className = 'refresh-btn-container';
+      container.className = 'logout-btn-container';
+      container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
       
       // 退出登录按钮
       const logoutBtn = document.createElement('button');
       logoutBtn.className = 'logout-btn';
       logoutBtn.textContent = '🚪 退出登录';
+      logoutBtn.style.cssText = 'padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s; white-space: nowrap;';
+      logoutBtn.onmouseover = () => {
+        logoutBtn.style.background = '#c82333';
+        logoutBtn.style.transform = 'translateY(-2px)';
+        logoutBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+      };
+      logoutBtn.onmouseout = () => {
+        logoutBtn.style.background = '#dc3545';
+        logoutBtn.style.transform = 'translateY(0)';
+        logoutBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+      };
       logoutBtn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -87,33 +54,21 @@
         window.location.href = window.location.pathname + '?t=' + Date.now();
       };
       
-      // 刷新按钮
-      const refreshBtn = document.createElement('button');
-      refreshBtn.className = 'refresh-btn';
-      refreshBtn.textContent = '🔄 刷新页面';
-      refreshBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // 强制刷新，清除缓存
-        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
-      };
-      
       container.appendChild(logoutBtn);
-      container.appendChild(refreshBtn);
       document.body.appendChild(container);
     };
 
-    // 页面加载后立即添加刷新按钮
+    // 页面加载后立即添加退出登录按钮
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', addRefreshButton);
+      document.addEventListener('DOMContentLoaded', addLogoutButton);
     } else {
-      addRefreshButton();
+      addLogoutButton();
     }
     
     // 确保按钮始终存在
     setInterval(() => {
-      if (!document.querySelector('.refresh-btn-container')) {
-        addRefreshButton();
+      if (!document.querySelector('.logout-btn-container')) {
+        addLogoutButton();
       }
     }, 1000);
 
