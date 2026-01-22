@@ -17,7 +17,7 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
-    // 添加退出登录按钮到页面
+    // 添加刷新页面按钮到页面
     const addLogoutButton = () => {
       if (document.querySelector('.logout-btn-container')) return;
       
@@ -25,10 +25,10 @@
       container.className = 'logout-btn-container';
       container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
       
-      // 退出登录按钮
+      // 刷新页面按钮（清除登录状态）
       const logoutBtn = document.createElement('button');
       logoutBtn.className = 'logout-btn';
-      logoutBtn.textContent = '🚪 退出登录';
+      logoutBtn.textContent = '🔄 刷新页面';
       logoutBtn.style.cssText = 'padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s; white-space: nowrap;';
       logoutBtn.onmouseover = () => {
         logoutBtn.style.background = '#c82333';
