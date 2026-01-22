@@ -289,37 +289,8 @@
         }
     }
     
-    // 页面可见性变化时控制动画
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            stopAnimation();
-        } else {
-            startAnimation();
-        }
-    });
-    
-    // 使用 IntersectionObserver 检测组件是否在视口中
-    if ('IntersectionObserver' in window) {
-        var observer = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    startAnimation();
-                } else {
-                    stopAnimation();
-                }
-            });
-        }, { threshold: 0.1 });
-        observer.observe(ss);
-    } else {
-        // 不支持 IntersectionObserver 的浏览器直接启动动画
-        startAnimation();
-    }
-    
-    // 确保动画在页面加载后立即启动（针对手机端）
-    setTimeout(function() {
-        if (!animationRunning) {
-            startAnimation();
-        }
-    }, 100);
+    // 直接启动动画
+    animationRunning = true;
+    animate();
 })();
 </script>
