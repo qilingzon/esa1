@@ -17,6 +17,69 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
+    // 添加全局刷新按钮样式
+    const style = document.createElement('style');
+    style.textContent = `
+      .refresh-btn-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+      .refresh-btn {
+        padding: 10px 20px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s;
+      }
+      .refresh-btn:hover {
+        background: #0052a3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      .refresh-btn:active {
+        transform: translateY(0);
+      }
+    `;
+    document.head.appendChild(style);
+
+    // 添加刷新按钮到页面
+    const addRefreshButton = () => {
+      if (document.querySelector('.refresh-btn-container')) return;
+      
+      const container = document.createElement('div');
+      container.className = 'refresh-btn-container';
+      
+      const btn = document.createElement('button');
+      btn.className = 'refresh-btn';
+      btn.textContent = '🔄 刷新页面';
+      btn.onclick = () => {
+        window.location.reload();
+      };
+      
+      container.appendChild(btn);
+      document.body.appendChild(container);
+    };
+
+    // 页面加载后立即添加刷新按钮
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', addRefreshButton);
+    } else {
+      addRefreshButton();
+    }
+    
+    // 确保按钮始终存在
+    setInterval(() => {
+      if (!document.querySelector('.refresh-btn-container')) {
+        addRefreshButton();
+      }
+    }, 1000);
+
     // Sveltia CMS 完整中文汉化
     const textMappings = {
       // ===== 用户菜单 =====
