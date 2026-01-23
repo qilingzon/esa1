@@ -17,14 +17,81 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
+    // 添加调试面板
+    (function() {
+      const debugPanel = document.createElement('div');
+      debugPanel.id = 'debug-panel';
+      debugPanel.style.cssText = 'position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #0f0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 11px; max-width: 300px; max-height: 400px; overflow-y: auto; z-index: 999999;';
+      debugPanel.innerHTML = '<div style="color: #fff; font-weight: bold; margin-bottom: 5px;">🐛 调试日志</div>';
+      document.body.appendChild(debugPanel);
+      
+      const originalLog = console.log;
+      console.log = function(...args) {
+        originalLog.apply(console, args);
+        const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+        const line = document.createElement('div');
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        line.style.cssText = 'margin: 2px 0; font-size: 10px;';
+        debugPanel.appendChild(line);
+        debugPanel.scrollTop = debugPanel.scrollHeight;
+      };
+      
+      console.log('✅ 调试面板已启动');
+      console.log('📍 当前 URL:', window.location.href);
+      console.log('🌐 User Agent:', navigator.userAgent.substring(0, 50) + '...');
+    })();
+    
+    // 兼容跟踪保护的存储方案
+    const storage = {
+      setItem: (key, value) => {
+        try {
+          localStorage.setItem(key, value);
+        } catch (e) {
+          // 如果 localStorage 被阻止，使用 Cookie
+          document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
+        }
+      },
+      getItem: (key) => {
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          // 从 Cookie 读取
+          const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+          return match ? decodeURIComponent(match[2]) : null;
+        }
+      },
+      removeItem: (key) => {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {}
+        document.cookie = `${key}=; path=/; max-age=0`;
+      }
+    };
+
     // 一键创建 Token 功能
     (function() {
       function addQuickTokenButton() {
-        const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i], input[placeholder*="令牌" i]');
+        // 更宽松的选择器，尝试多种方式找到输入框
+        const tokenInput = document.querySelector(
+          'input[type="password"]' +
+          ', input[placeholder*="token" i]' +
+          ', input[placeholder*="令牌" i]' +
+          ', input[name*="token" i]' +
+          ', input[id*="token" i]' +
+          ', input[type="text"][placeholder*="access" i]'
+        );
+        
+        console.log('🔍 查找 Token 输入框:', tokenInput);
+        
         if (!tokenInput || document.getElementById('quick-token-box')) return;
 
-        const loginForm = tokenInput.closest('form') || tokenInput.parentElement;
-        if (!loginForm) return;
+        const loginForm = tokenInput.closest('form') || tokenInput.closest('div') || tokenInput.parentElement;
+        if (!loginForm) {
+          console.log('❌ 未找到登录表单容器');
+          return;
+        }
+        
+        console.log('✅ 找到登录表单，准备添加一键创建按钮');
 
         const quickBox = document.createElement('div');
         quickBox.id = 'quick-token-box';
@@ -85,12 +152,31 @@
         });
       }
 
-      const checkInterval = setInterval(addQuickTokenButton, 500);
-      setTimeout(() => clearInterval(checkInterval), 10000);
+      // 持续检查，直到成功添加
+      let attempts = 0;
+      const maxAttempts = 120; // 60秒
+      const checkInterval = setInterval(() => {
+        attempts++;
+        console.log(`🔄 尝试添加一键创建按钮 (${attempts}/${maxAttempts})`);
+        addQuickTokenButton();
+        
+        // 如果成功添加，停止检查
+        if (document.getElementById('quick-token-box')) {
+          console.log('✅ 一键创建按钮已成功添加');
+          clearInterval(checkInterval);
+        }
+        
+        if (attempts >= maxAttempts) {
+          console.log('⏱️ 超时：未能添加一键创建按钮');
+          clearInterval(checkInterval);
+        }
+      }, 500);
     })();
 
     // 云端密码登录系统 - 使用 GitHub Gist 存储
     (function() {
+      console.log('🚀 初始化云端密码登录系统');
+      
       const GIST_ID_KEY = 'cms_gist_id';
       const GITHUB_TOKEN_KEY = 'cms_github_token';
       
@@ -140,7 +226,7 @@
           updatedAt: new Date().toISOString()
         };
 
-        const gistId = localStorage.getItem(GIST_ID_KEY);
+        const gistId = storage.getItem(GIST_ID_KEY);
         const url = gistId 
           ? `https://api.github.com/gists/${gistId}`
           : 'https://api.github.com/gists';
@@ -168,7 +254,7 @@
         
         const result = await response.json();
         if (!gistId) {
-          localStorage.setItem(GIST_ID_KEY, result.id);
+          storage.setItem(GIST_ID_KEY, result.id);
         }
         return result.id;
       }
@@ -187,13 +273,28 @@
 
       // 添加登录界面
       function addPasswordLogin() {
-        const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i], input[placeholder*="令牌" i]');
+        // 更宽松的选择器
+        const tokenInput = document.querySelector(
+          'input[type="password"]' +
+          ', input[placeholder*="token" i]' +
+          ', input[placeholder*="令牌" i]' +
+          ', input[name*="token" i]' +
+          ', input[id*="token" i]' +
+          ', input[type="text"][placeholder*="access" i]'
+        );
+        
+        console.log('🔍 查找 Token 输入框（密码登录）:', tokenInput);
+        
         if (!tokenInput || document.getElementById('cloud-login-box')) return;
 
-        const loginForm = tokenInput.closest('form') || tokenInput.parentElement;
-        if (!loginForm) return;
+        const loginForm = tokenInput.closest('form') || tokenInput.closest('div') || tokenInput.parentElement;
+        if (!loginForm) {
+          console.log('❌ 未找到登录表单容器（密码登录）');
+          return;
+        }
 
-        const gistId = localStorage.getItem(GIST_ID_KEY);
+        const gistId = storage.getItem(GIST_ID_KEY);
+        console.log('📦 Gist ID:', gistId ? '已设置' : '未设置');
 
         const cloudBox = document.createElement('div');
         cloudBox.id = 'cloud-login-box';
@@ -245,10 +346,13 @@
         }
 
         loginForm.appendChild(cloudBox);
+        console.log('✅ 云端密码登录界面已添加');
 
         if (gistId) {
+          console.log('🔐 设置云端密码登录');
           setupCloudLogin();
         } else {
+          console.log('🆕 设置首次云端密码配置');
           setupFirstTimeCloudLogin(tokenInput);
         }
       }
@@ -273,7 +377,7 @@
           loginBtn.disabled = true;
 
           try {
-            const gistId = localStorage.getItem(GIST_ID_KEY);
+            const gistId = storage.getItem(GIST_ID_KEY);
             const gistData = await loadFromGist(gistId);
             
             if (!gistData) {
@@ -336,7 +440,7 @@
 
         resetBtn.addEventListener('click', () => {
           if (confirm('确定要重置云端数据吗？需要重新设置密码。')) {
-            localStorage.removeItem(GIST_ID_KEY);
+            storage.removeItem(GIST_ID_KEY);
             location.reload();
           }
         });
@@ -425,8 +529,25 @@
         });
       }
 
-      const checkInterval = setInterval(addPasswordLogin, 500);
-      setTimeout(() => clearInterval(checkInterval), 30000);
+      // 持续检查，直到成功添加
+      let attempts = 0;
+      const maxAttempts = 120; // 60秒
+      const checkInterval = setInterval(() => {
+        attempts++;
+        console.log(`🔄 尝试添加密码登录 (${attempts}/${maxAttempts})`);
+        addPasswordLogin();
+        
+        // 如果成功添加，停止检查
+        if (document.getElementById('cloud-login-box')) {
+          console.log('✅ 密码登录界面已成功添加');
+          clearInterval(checkInterval);
+        }
+        
+        if (attempts >= maxAttempts) {
+          console.log('⏱️ 超时：未能添加密码登录界面');
+          clearInterval(checkInterval);
+        }
+      }, 500);
     })();
 
     // 添加刷新页面按钮到页面
