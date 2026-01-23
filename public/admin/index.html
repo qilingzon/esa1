@@ -6,1270 +6,270 @@
   <meta name="robots" content="noindex" />
   <title>内容管理</title>
   <style>
-    /* 隐藏 Sign in with GitHub OAuth 按钮，只保留 Token 登录 */
-    [class*="oauth"],
-    button[class*="github"]:not([class*="token"]),
-    .sui.primary.large {
-      display: none !important;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #quick-login-panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      margin: 20px;
+    }
+    
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      color: #333;
+      text-align: center;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #218838;
+    }
+    
+    .btn-link {
+      background: transparent;
+      color: #667eea;
+      text-decoration: underline;
+      padding: 8px;
+    }
+    
+    .error {
+      color: #dc3545;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+    
+    .success {
+      color: #28a745;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+    
+    .steps {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-top: 15px;
+      display: none;
+    }
+    
+    .steps div {
+      margin: 5px 0;
+    }
+    
+    code {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    
+    #cms-container {
+      display: none;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
-  <script>
-    // 添加调试面板
-    (function() {
-      const debugPanel = document.createElement('div');
-      debugPanel.id = 'debug-panel';
-      debugPanel.style.cssText = 'position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #0f0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 11px; max-width: 300px; max-height: 400px; overflow-y: auto; z-index: 999999;';
-      debugPanel.innerHTML = '<div style="color: #fff; font-weight: bold; margin-bottom: 5px;">🐛 调试日志</div>';
-      document.body.appendChild(debugPanel);
-      
-      const originalLog = console.log;
-      console.log = function(...args) {
-        originalLog.apply(console, args);
-        const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
-        const line = document.createElement('div');
-        line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        line.style.cssText = 'margin: 2px 0; font-size: 10px;';
-        debugPanel.appendChild(line);
-        debugPanel.scrollTop = debugPanel.scrollHeight;
-      };
-      
-      console.log('✅ 调试面板已启动');
-      console.log('📍 当前 URL:', window.location.href);
-      console.log('🌐 User Agent:', navigator.userAgent.substring(0, 50) + '...');
-      
-      // 每秒检查页面状态
-      let checkCount = 0;
-      const statusCheck = setInterval(() => {
-        checkCount++;
-        const inputs = document.querySelectorAll('input');
-        const buttons = document.querySelectorAll('button');
-        const bodyLength = document.body.innerHTML.length;
-        
-        console.log(`📊 [${checkCount}s] 输入框:${inputs.length} 按钮:${buttons.length} 页面大小:${bodyLength}字符`);
-        
-        if (inputs.length > 0) {
-          console.log('🎉 发现输入框！');
-          inputs.forEach((input, i) => {
-            console.log(`  输入框${i+1}: type="${input.type}" placeholder="${input.placeholder}" name="${input.name}"`);
-          });
-        }
-        
-        if (checkCount >= 60) {
-          console.log('⏱️ 停止状态检查');
-          clearInterval(statusCheck);
-        }
-      }, 1000);
-    })();
+  <div id="quick-login-panel">
+    <h1>🚀 博客后台</h1>
+    <div class="subtitle">快速登录到内容管理系统</div>
     
-    // 兼容跟踪保护的存储方案
-    const storage = {
-      setItem: (key, value) => {
-        try {
-          localStorage.setItem(key, value);
-        } catch (e) {
-          // 如果 localStorage 被阻止，使用 Cookie
-          document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
-        }
-      },
-      getItem: (key) => {
-        try {
-          return localStorage.getItem(key);
-        } catch (e) {
-          // 从 Cookie 读取
-          const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-          return match ? decodeURIComponent(match[2]) : null;
-        }
-      },
-      removeItem: (key) => {
-        try {
-          localStorage.removeItem(key);
-        } catch (e) {}
-        document.cookie = `${key}=; path=/; max-age=0`;
-      }
-    };
-
-    // 一键创建 Token 功能
-    (function() {
-      function addQuickTokenButton() {
-        // 更宽松的选择器，尝试多种方式找到输入框
-        const tokenInput = document.querySelector(
-          'input[type="password"]' +
-          ', input[placeholder*="token" i]' +
-          ', input[placeholder*="令牌" i]' +
-          ', input[name*="token" i]' +
-          ', input[id*="token" i]' +
-          ', input[type="text"][placeholder*="access" i]'
-        );
-        
-        console.log('🔍 查找 Token 输入框:', tokenInput);
-        
-        if (!tokenInput || document.getElementById('quick-token-box')) return;
-
-        const loginForm = tokenInput.closest('form') || tokenInput.closest('div') || tokenInput.parentElement;
-        if (!loginForm) {
-          console.log('❌ 未找到登录表单容器');
-          return;
-        }
-        
-        console.log('✅ 找到登录表单，准备添加一键创建按钮');
-
-        const quickBox = document.createElement('div');
-        quickBox.id = 'quick-token-box';
-        quickBox.style.cssText = 'margin-bottom: 15px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; color: white;';
-        quickBox.innerHTML = `
-          <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center;">
-            🚀 首次使用？一键创建 Token
-          </div>
-          <div style="font-size: 13px; margin-bottom: 12px; text-align: center; opacity: 0.9;">
-            点击下方按钮，我们会帮你打开配置好的页面
-          </div>
-          <button type="button" id="create-token-btn" 
-                  style="width: 100%; padding: 12px; background: white; color: #667eea; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; margin-bottom: 8px;">
-            📝 打开 GitHub 创建 Token
-          </button>
-          <div id="token-steps" style="display: none; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 4px; font-size: 12px; margin-top: 10px;">
-            <div style="font-weight: bold; margin-bottom: 8px;">📋 简单3步：</div>
-            <div style="margin-bottom: 4px;">1️⃣ 在打开的页面中，Note 填写：<code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">Blog CMS</code></div>
-            <div style="margin-bottom: 4px;">2️⃣ 勾选权限：<code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">repo</code> 和 <code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">gist</code></div>
-            <div style="margin-bottom: 4px;">3️⃣ 点击底部绿色按钮生成，然后复制 Token 粘贴到上方输入框</div>
-          </div>
-          <button type="button" id="show-steps-btn" 
-                  style="width: 100%; padding: 8px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-            查看详细步骤 ▼
-          </button>
-        `;
-
-        loginForm.insertBefore(quickBox, tokenInput.parentElement);
-
-        // 打开 Token 创建页面
-        document.getElementById('create-token-btn').addEventListener('click', () => {
-          // 打开预配置的 Token 创建页面
-          const tokenUrl = 'https://github.com/settings/tokens/new?' + new URLSearchParams({
-            description: 'Blog CMS - ' + new Date().toLocaleDateString(),
-            scopes: 'repo,gist'
-          }).toString();
-          
-          window.open(tokenUrl, '_blank');
-          
-          // 显示步骤
-          document.getElementById('token-steps').style.display = 'block';
-          document.getElementById('show-steps-btn').style.display = 'none';
-          document.getElementById('create-token-btn').textContent = '✓ 已打开页面，请在新窗口中操作';
-          document.getElementById('create-token-btn').style.background = '#28a745';
-          document.getElementById('create-token-btn').style.color = 'white';
-        });
-
-        // 显示/隐藏步骤
-        document.getElementById('show-steps-btn').addEventListener('click', function() {
-          const steps = document.getElementById('token-steps');
-          if (steps.style.display === 'none') {
-            steps.style.display = 'block';
-            this.textContent = '隐藏步骤 ▲';
-          } else {
-            steps.style.display = 'none';
-            this.textContent = '查看详细步骤 ▼';
-          }
-        });
-      }
-
-      // 持续检查，直到成功添加
-      let attempts = 0;
-      const maxAttempts = 120; // 60秒
-      let lastInputCount = 0;
-      
-      const checkInterval = setInterval(() => {
-        attempts++;
-        
-        // 每10次尝试，输出页面上所有输入框的信息
-        if (attempts % 10 === 0) {
-          const allInputs = document.querySelectorAll('input');
-          if (allInputs.length !== lastInputCount) {
-            console.log(`📊 页面上共有 ${allInputs.length} 个输入框`);
-            allInputs.forEach((input, i) => {
-              console.log(`  输入框 ${i+1}: type="${input.type}", placeholder="${input.placeholder}", name="${input.name}", id="${input.id}"`);
-            });
-            lastInputCount = allInputs.length;
-          }
-        }
-        
-        console.log(`🔄 尝试添加一键创建按钮 (${attempts}/${maxAttempts})`);
-        addQuickTokenButton();
-        
-        // 如果成功添加，停止检查
-        if (document.getElementById('quick-token-box')) {
-          console.log('✅ 一键创建按钮已成功添加');
-          clearInterval(checkInterval);
-        }
-        
-        if (attempts >= maxAttempts) {
-          console.log('⏱️ 超时：未能添加一键创建按钮');
-          clearInterval(checkInterval);
-        }
-      }, 500);
-    })();
-
-    // 云端密码登录系统 - 使用 GitHub Gist 存储
-    (function() {
-      console.log('🚀 初始化云端密码登录系统');
-      
-      const GIST_ID_KEY = 'cms_gist_id';
-      const GITHUB_TOKEN_KEY = 'cms_github_token';
-      
-      // 加密函数
-      async function encrypt(text, password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(text);
-        const passwordKey = await crypto.subtle.digest('SHA-256', encoder.encode(password));
-        const key = await crypto.subtle.importKey('raw', passwordKey, 'AES-GCM', false, ['encrypt']);
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
-        return btoa(String.fromCharCode(...iv) + String.fromCharCode(...new Uint8Array(encrypted)));
-      }
-
-      // 解密函数
-      async function decrypt(encryptedData, password) {
-        try {
-          const encoder = new TextEncoder();
-          const data = atob(encryptedData);
-          const iv = new Uint8Array(12);
-          for (let i = 0; i < 12; i++) iv[i] = data.charCodeAt(i);
-          const encrypted = new Uint8Array(data.length - 12);
-          for (let i = 0; i < encrypted.length; i++) encrypted[i] = data.charCodeAt(i + 12);
-          const passwordKey = await crypto.subtle.digest('SHA-256', encoder.encode(password));
-          const key = await crypto.subtle.importKey('raw', passwordKey, 'AES-GCM', false, ['decrypt']);
-          const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
-          return new TextDecoder().decode(decrypted);
-        } catch {
-          return null;
-        }
-      }
-
-      // 哈希函数
-      async function hash(text) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(text);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-      }
-
-      // 创建或更新 Gist
-      async function saveToGist(token, password, encryptedToken) {
-        const passwordHash = await hash(password);
-        const gistData = {
-          encryptedToken,
-          passwordHash,
-          updatedAt: new Date().toISOString()
-        };
-
-        const gistId = storage.getItem(GIST_ID_KEY);
-        const url = gistId 
-          ? `https://api.github.com/gists/${gistId}`
-          : 'https://api.github.com/gists';
-        
-        const method = gistId ? 'PATCH' : 'POST';
-        
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Authorization': `token ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            description: 'CMS Login Data (Encrypted)',
-            public: false,
-            files: {
-              'cms-login.json': {
-                content: JSON.stringify(gistData, null, 2)
-              }
-            }
-          })
-        });
-
-        if (!response.ok) throw new Error('Failed to save to Gist');
-        
-        const result = await response.json();
-        if (!gistId) {
-          storage.setItem(GIST_ID_KEY, result.id);
-        }
-        return result.id;
-      }
-
-      // 从 Gist 读取
-      async function loadFromGist(gistId) {
-        const response = await fetch(`https://api.github.com/gists/${gistId}`);
-        if (!response.ok) return null;
-        
-        const gist = await response.json();
-        const file = gist.files['cms-login.json'];
-        if (!file) return null;
-        
-        return JSON.parse(file.content);
-      }
-
-      // 添加登录界面
-      function addPasswordLogin() {
-        // 更宽松的选择器
-        const tokenInput = document.querySelector(
-          'input[type="password"]' +
-          ', input[placeholder*="token" i]' +
-          ', input[placeholder*="令牌" i]' +
-          ', input[name*="token" i]' +
-          ', input[id*="token" i]' +
-          ', input[type="text"][placeholder*="access" i]'
-        );
-        
-        console.log('🔍 查找 Token 输入框（密码登录）:', tokenInput);
-        
-        if (!tokenInput || document.getElementById('cloud-login-box')) return;
-
-        const loginForm = tokenInput.closest('form') || tokenInput.closest('div') || tokenInput.parentElement;
-        if (!loginForm) {
-          console.log('❌ 未找到登录表单容器（密码登录）');
-          return;
-        }
-
-        const gistId = storage.getItem(GIST_ID_KEY);
-        console.log('📦 Gist ID:', gistId ? '已设置' : '未设置');
-
-        const cloudBox = document.createElement('div');
-        cloudBox.id = 'cloud-login-box';
-        cloudBox.style.cssText = 'margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;';
-        
-        if (gistId) {
-          // 已设置云端密码
-          cloudBox.innerHTML = `
-            <div style="margin-bottom: 10px; font-size: 14px; color: #28a745; text-align: center; font-weight: bold;">
-              ☁️ 云端密码登录（任何设备可用）
-            </div>
-            <input type="password" id="cloud-password" placeholder="输入您的密码" 
-                   style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
-            <button type="button" id="cloud-login-btn" 
-                    style="width: 100%; margin-top: 10px; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;">
-              使用密码登录
-            </button>
-            <button type="button" id="reset-cloud-btn" 
-                    style="width: 100%; margin-top: 8px; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-              重置云端数据
-            </button>
-            <div id="cloud-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
-          `;
-        } else {
-          // 首次使用
-          cloudBox.innerHTML = `
-            <div style="margin-bottom: 10px; font-size: 14px; color: #666; text-align: center;">
-              💡 设置云端密码，任何设备都能快速登录
-            </div>
-            <div id="setup-cloud-area" style="display: none; margin-top: 15px; padding: 15px; background: white; border-radius: 4px; border: 1px solid #28a745;">
-              <div style="font-size: 14px; color: #28a745; margin-bottom: 10px; font-weight: bold; text-align: center;">
-                ✓ 登录成功！设置云端密码
-              </div>
-              <input type="password" id="cloud-new-password" placeholder="设置密码（至少6位）" 
-                     style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box; margin-bottom: 8px;" />
-              <input type="password" id="cloud-confirm-password" placeholder="确认密码" 
-                     style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
-              <button type="button" id="save-cloud-btn" 
-                      style="width: 100%; margin-top: 10px; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;">
-                保存到云端
-              </button>
-              <button type="button" id="skip-cloud-btn" 
-                      style="width: 100%; margin-top: 8px; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                跳过
-              </button>
-              <div id="cloud-setup-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
-            </div>
-          `;
-        }
-
-        loginForm.appendChild(cloudBox);
-        console.log('✅ 云端密码登录界面已添加');
-
-        if (gistId) {
-          console.log('🔐 设置云端密码登录');
-          setupCloudLogin();
-        } else {
-          console.log('🆕 设置首次云端密码配置');
-          setupFirstTimeCloudLogin(tokenInput);
-        }
-      }
-
-      // 云端密码登录
-      function setupCloudLogin() {
-        const passwordInput = document.getElementById('cloud-password');
-        const loginBtn = document.getElementById('cloud-login-btn');
-        const resetBtn = document.getElementById('reset-cloud-btn');
-        const errorDiv = document.getElementById('cloud-error');
-
-        async function handleCloudLogin() {
-          const password = passwordInput.value.trim();
-          
-          if (!password) {
-            errorDiv.textContent = '请输入密码';
-            errorDiv.style.display = 'block';
-            return;
-          }
-
-          loginBtn.textContent = '验证中...';
-          loginBtn.disabled = true;
-
-          try {
-            const gistId = storage.getItem(GIST_ID_KEY);
-            const gistData = await loadFromGist(gistId);
-            
-            if (!gistData) {
-              errorDiv.textContent = '云端数据加载失败';
-              errorDiv.style.display = 'block';
-              loginBtn.textContent = '使用密码登录';
-              loginBtn.disabled = false;
-              return;
-            }
-
-            const passwordHash = await hash(password);
-            
-            if (passwordHash === gistData.passwordHash) {
-              const token = await decrypt(gistData.encryptedToken, password);
-              
-              if (token) {
-                const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i]');
-                if (tokenInput) {
-                  tokenInput.value = token;
-                  tokenInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  tokenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  
-                  errorDiv.style.display = 'none';
-                  loginBtn.textContent = '✓ 登录中...';
-                  loginBtn.style.background = '#28a745';
-
-                  setTimeout(() => {
-                    const submitBtn = document.querySelector('button[type="submit"]');
-                    if (submitBtn) submitBtn.click();
-                  }, 300);
-                }
-              } else {
-                errorDiv.textContent = '数据解密失败';
-                errorDiv.style.display = 'block';
-                loginBtn.textContent = '使用密码登录';
-                loginBtn.disabled = false;
-              }
-            } else {
-              errorDiv.textContent = '密码错误';
-              errorDiv.style.display = 'block';
-              loginBtn.textContent = '使用密码登录';
-              loginBtn.disabled = false;
-              passwordInput.value = '';
-            }
-          } catch (error) {
-            errorDiv.textContent = '登录失败: ' + error.message;
-            errorDiv.style.display = 'block';
-            loginBtn.textContent = '使用密码登录';
-            loginBtn.disabled = false;
-          }
-        }
-
-        loginBtn.addEventListener('click', handleCloudLogin);
-        passwordInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleCloudLogin();
-          }
-        });
-
-        resetBtn.addEventListener('click', () => {
-          if (confirm('确定要重置云端数据吗？需要重新设置密码。')) {
-            storage.removeItem(GIST_ID_KEY);
-            location.reload();
-          }
-        });
-      }
-
-      // 首次设置云端密码
-      function setupFirstTimeCloudLogin(tokenInput) {
-        const observer = new MutationObserver(() => {
-          if (document.querySelector('[class*="dashboard"], [class*="content"], main')) {
-            const setupArea = document.getElementById('setup-cloud-area');
-            if (setupArea && tokenInput.value) {
-              setupArea.style.display = 'block';
-              setupCloudPasswordSaving(tokenInput.value);
-              observer.disconnect();
-            }
-          }
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
-        setTimeout(() => observer.disconnect(), 30000);
-      }
-
-      // 保存到云端
-      function setupCloudPasswordSaving(token) {
-        const newPasswordInput = document.getElementById('cloud-new-password');
-        const confirmPasswordInput = document.getElementById('cloud-confirm-password');
-        const saveBtn = document.getElementById('save-cloud-btn');
-        const skipBtn = document.getElementById('skip-cloud-btn');
-        const errorDiv = document.getElementById('cloud-setup-error');
-
-        async function savePassword() {
-          const newPassword = newPasswordInput.value.trim();
-          const confirmPassword = confirmPasswordInput.value.trim();
-
-          if (!newPassword || !confirmPassword) {
-            errorDiv.textContent = '请输入密码';
-            errorDiv.style.display = 'block';
-            return;
-          }
-
-          if (newPassword.length < 6) {
-            errorDiv.textContent = '密码至少6位';
-            errorDiv.style.display = 'block';
-            return;
-          }
-
-          if (newPassword !== confirmPassword) {
-            errorDiv.textContent = '两次密码不一致';
-            errorDiv.style.display = 'block';
-            return;
-          }
-
-          saveBtn.textContent = '保存中...';
-          saveBtn.disabled = true;
-
-          try {
-            const encryptedToken = await encrypt(token, newPassword);
-            await saveToGist(token, newPassword, encryptedToken);
-
-            errorDiv.style.display = 'none';
-            saveBtn.textContent = '✓ 保存成功';
-            saveBtn.style.background = '#28a745';
-
-            setTimeout(() => {
-              document.getElementById('setup-cloud-area').innerHTML = 
-                '<div style="color: #28a745; text-align: center; padding: 20px;">✓ 密码已保存到云端，任何设备都能使用</div>';
-            }, 1000);
-          } catch (error) {
-            errorDiv.textContent = '保存失败: ' + error.message;
-            errorDiv.style.display = 'block';
-            saveBtn.textContent = '保存到云端';
-            saveBtn.disabled = false;
-          }
-        }
-
-        saveBtn.addEventListener('click', savePassword);
-        skipBtn.addEventListener('click', () => {
-          document.getElementById('setup-cloud-area').style.display = 'none';
-        });
-
-        confirmPasswordInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            savePassword();
-          }
-        });
-      }
-
-      // 持续检查，直到成功添加
-      let attempts = 0;
-      const maxAttempts = 120; // 60秒
-      
-      const checkInterval = setInterval(() => {
-        attempts++;
-        console.log(`🔄 尝试添加密码登录 (${attempts}/${maxAttempts})`);
-        addPasswordLogin();
-        
-        // 如果成功添加，停止检查
-        if (document.getElementById('cloud-login-box')) {
-          console.log('✅ 密码登录界面已成功添加');
-          clearInterval(checkInterval);
-        }
-        
-        if (attempts >= maxAttempts) {
-          console.log('⏱️ 超时：未能添加密码登录界面');
-          clearInterval(checkInterval);
-        }
-      }, 500);
-    })();
-
-    // 添加刷新页面按钮到页面
-    const addLogoutButton = () => {
-      if (document.querySelector('.logout-btn-container')) return;
-      
-      const container = document.createElement('div');
-      container.className = 'logout-btn-container';
-      container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
-      
-      // 刷新页面按钮（清除登录状态）
-      const logoutBtn = document.createElement('button');
-      logoutBtn.className = 'logout-btn';
-      logoutBtn.textContent = '🔄 刷新页面';
-      logoutBtn.style.cssText = 'padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s; white-space: nowrap;';
-      logoutBtn.onmouseover = () => {
-        logoutBtn.style.background = '#c82333';
-        logoutBtn.style.transform = 'translateY(-2px)';
-        logoutBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-      };
-      logoutBtn.onmouseout = () => {
-        logoutBtn.style.background = '#dc3545';
-        logoutBtn.style.transform = 'translateY(0)';
-        logoutBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-      };
-      logoutBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // 清除所有本地存储
-        localStorage.clear();
-        sessionStorage.clear();
-        // 清除所有 cookies
-        document.cookie.split(";").forEach(c => {
-          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-        });
-        // 强制刷新回到登录页
-        window.location.href = window.location.pathname + '?t=' + Date.now();
-      };
-      
-      container.appendChild(logoutBtn);
-      document.body.appendChild(container);
-    };
-
-    // 页面加载后立即添加退出登录按钮
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', addLogoutButton);
-    } else {
-      addLogoutButton();
+    <!-- 一键创建 Token -->
+    <div class="section">
+      <div class="section-title">📝 首次使用？创建 GitHub Token</div>
+      <button class="btn-secondary" onclick="createToken()">打开 GitHub 创建 Token</button>
+      <button class="btn-link" onclick="toggleSteps()">查看详细步骤</button>
+      <div id="steps" class="steps">
+        <div style="font-weight: bold; margin-bottom: 8px;">📋 简单3步：</div>
+        <div>1️⃣ 在打开的页面中，Note 填写：<code>Blog CMS</code></div>
+        <div>2️⃣ 勾选权限：<code>repo</code> 和 <code>gist</code></div>
+        <div>3️⃣ 点击底部绿色按钮生成，然后复制 Token 粘贴到下方</div>
+      </div>
+    </div>
+    
+    <!-- Token 登录 -->
+    <div class="section">
+      <div class="section-title">🔑 使用 GitHub Token 登录</div>
+      <input type="password" id="token-input" placeholder="粘贴你的 GitHub Token" />
+      <button class="btn-primary" onclick="loginWithToken()">登录</button>
+      <div id="token-error" class="error"></div>
+      <div id="token-success" class="success"></div>
+    </div>
+  </div>
+  
+  <!-- CMS 容器 -->
+  <div id="cms-container">
+    <div class="loading">正在加载内容管理系统...</div>
+  </div>
+  
+  <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js" type="module"></script>
+  <script>
+    function createToken() {
+      const url = 'https://github.com/settings/tokens/new?' + new URLSearchParams({
+        description: 'Blog CMS - ' + new Date().toLocaleDateString(),
+        scopes: 'repo,gist'
+      }).toString();
+      window.open(url, '_blank');
+      document.getElementById('steps').style.display = 'block';
     }
     
-    // 确保按钮始终存在
-    setInterval(() => {
-      if (!document.querySelector('.logout-btn-container')) {
-        addLogoutButton();
+    function toggleSteps() {
+      const steps = document.getElementById('steps');
+      steps.style.display = steps.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    async function loginWithToken() {
+      const token = document.getElementById('token-input').value.trim();
+      const errorDiv = document.getElementById('token-error');
+      const successDiv = document.getElementById('token-success');
+      
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      
+      if (!token) {
+        errorDiv.textContent = '请输入 GitHub Token';
+        errorDiv.style.display = 'block';
+        return;
       }
-    }, 1000);
-
-    // Sveltia CMS 完整中文汉化
-    const textMappings = {
-      // ===== 用户菜单 =====
-      'Signed In as': '已登录为',
-      'Signed in as': '已登录为',
-      'Live Site': '访问网站',
-      'Keyboard Shortcuts': '键盘快捷键',
-      'Keyboard shortcuts': '键盘快捷键',
       
-      // ===== Beta 功能和开发者模式 =====
-      'Beta Features': '测试功能',
-      'Beta features': '测试功能',
-      'Enable some beta features that may be unstable or unlocalized.': '启用一些可能不稳定或未本地化的测试功能。',
-      'Enable some beta features that may be unstable or unlocalized': '启用一些可能不稳定或未本地化的测试功能',
-      'Join Beta Program': '加入测试计划',
-      'Enable Developer Mode': '启用开发者模式',
-      'Enable some developer-oriented features, including detailed console logs and native context menus.': '启用一些面向开发者的功能，包括详细的控制台日志和原生右键菜单。',
-      'Enable some developer-oriented features, including detailed console logs and native context menus': '启用一些面向开发者的功能，包括详细的控制台日志和原生右键菜单',
-      
-      // ===== 无障碍 =====
-      'Accessibility': '无障碍',
-      'Reduce Motion': '减少动画',
-      'High Contrast': '高对比度',
-      'Screen Reader': '屏幕阅读器',
-      'Underline Links': '链接下划线',
-      'Show underline for links in the entry preview and user interface labels.': '在条目预览和界面标签中显示链接下划线。',
-      'Always Underline Links': '始终显示链接下划线',
-      
-      // ===== 媒体 - 图库 API =====
-      'Pexels Free Images': 'Pexels 免费图库',
-      'Pixabay Free Images': 'Pixabay 免费图库',
-      'Unsplash Free Images': 'Unsplash 免费图库',
-      'Sign up for': '注册',
-      'and enter': '并输入',
-      'your API Key': '你的 API 密钥',
-      'here to insert free stock photos to image entry fields.': '以便在图片字段中插入免费图库照片。',
-      
-      // ===== 内容 - 编辑器设置 =====
-      'Automatically back up entry drafts': '自动备份条目草稿',
-      'Close the editor after saving a draft': '保存草稿后关闭编辑器',
-      'Close the editor with the Escape key': '按 Escape 键关闭编辑器',
-      
-      // ===== Settings 设置界面 =====
-      'Settings': '设置',
-      'Preferences': '偏好设置',
-      'Account': '账户',
-      'General': '通用',
-      'Appearance': '外观',
-      'Theme': '主题',
-      'Language': '语言',
-      'Dark': '深色',
-      'Light': '浅色',
-      'Auto': '自动',
-      'System': '跟随系统',
-      'Use system setting': '跟随系统设置',
-      'Interface Language': '界面语言',
-      'Date Format': '日期格式',
-      'Time Format': '时间格式',
-      'Timezone': '时区',
-      'Time Zone': '时区',
-      
-      // Settings - 账户相关
-      'Profile': '个人资料',
-      'User': '用户',
-      'Username': '用户名',
-      'Email': '邮箱',
-      'Avatar': '头像',
-      'Display Name': '显示名称',
-      'Full Name': '全名',
-      'Bio': '简介',
-      'Website': '网站',
-      'Location': '位置',
-      'Company': '公司',
-      'Organization': '组织',
-      
-      // Settings - 编辑器设置
-      'Editor': '编辑器',
-      'Editor Settings': '编辑器设置',
-      'Default Editor': '默认编辑器',
-      'Preview': '预览',
-      'Live Preview': '实时预览',
-      'Enable Preview': '启用预览',
-      'Show Preview': '显示预览',
-      'Hide Preview': '隐藏预览',
-      'Split View': '分屏视图',
-      'Side by Side': '并排显示',
-      'Tabs': '标签页',
-      'Auto Save': '自动保存',
-      'Auto-save': '自动保存',
-      'Spell Check': '拼写检查',
-      'Word Wrap': '自动换行',
-      'Line Numbers': '行号',
-      'Show Line Numbers': '显示行号',
-      'Font Size': '字体大小',
-      'Font Family': '字体',
-      'Tab Size': '制表符大小',
-      'Indent Size': '缩进大小',
-      'Use Tabs': '使用制表符',
-      'Use Spaces': '使用空格',
-      
-      // Settings - 媒体设置
-      'Media Settings': '媒体设置',
-      'Media Library': '媒体库',
-      'Upload Settings': '上传设置',
-      'Max File Size': '最大文件大小',
-      'Allowed File Types': '允许的文件类型',
-      'Image Optimization': '图片优化',
-      'Compress Images': '压缩图片',
-      'Resize Images': '调整图片大小',
-      'Max Width': '最大宽度',
-      'Max Height': '最大高度',
-      'Quality': '质量',
-      'Image Quality': '图片质量',
-      
-      // Settings - 工作流设置
-      'Workflow': '工作流',
-      'Workflow Settings': '工作流设置',
-      'Editorial Workflow': '编辑工作流',
-      'Enable Editorial Workflow': '启用编辑工作流',
-      'Require Review': '需要审核',
-      'Auto Publish': '自动发布',
-      'Publish Mode': '发布模式',
-      'Simple': '简单',
-      'Editorial': '编辑',
-      
-      // Settings - 高级设置
-      'Advanced': '高级',
-      'Advanced Settings': '高级设置',
-      'Developer Mode': '开发者模式',
-      'Debug Mode': '调试模式',
-      'Show Debug Info': '显示调试信息',
-      'Clear Cache': '清除缓存',
-      'Reset Settings': '重置设置',
-      'Reset to Default': '恢复默认',
-      'Export Settings': '导出设置',
-      'Import Settings': '导入设置',
-      'Backup': '备份',
-      'Restore': '恢复',
-      
-      // Settings - 通知设置
-      'Notifications': '通知',
-      'Notification Settings': '通知设置',
-      'Enable Notifications': '启用通知',
-      'Email Notifications': '邮件通知',
-      'Push Notifications': '推送通知',
-      'Desktop Notifications': '桌面通知',
-      'Sound': '声音',
-      'Enable Sound': '启用声音',
-      
-      // Settings - 安全设置
-      'Security': '安全',
-      'Security Settings': '安全设置',
-      'Password': '密码',
-      'Change Password': '修改密码',
-      'Current Password': '当前密码',
-      'New Password': '新密码',
-      'Confirm Password': '确认密码',
-      'Two-Factor Authentication': '两步验证',
-      '2FA': '两步验证',
-      'Enable 2FA': '启用两步验证',
-      'Sessions': '会话',
-      'Active Sessions': '活动会话',
-      'Sign Out All': '全部退出',
-      'Sign Out Other Sessions': '退出其他会话',
-      
-      // Settings - 集成设置
-      'Integrations': '集成',
-      'Connected Services': '已连接的服务',
-      'Connect': '连接',
-      'Disconnect': '断开连接',
-      'Connected': '已连接',
-      'Not Connected': '未连接',
-      'API': 'API',
-      'API Key': 'API 密钥',
-      'API Keys': 'API 密钥',
-      'Generate API Key': '生成 API 密钥',
-      'Revoke': '撤销',
-      'Webhooks': 'Webhooks',
-      'Add Webhook': '添加 Webhook',
-      
-      // Settings - 关于
-      'About': '关于',
-      'Version': '版本',
-      'Check for Updates': '检查更新',
-      'Up to Date': '已是最新',
-      'Update Available': '有可用更新',
-      'Release Notes': '更新日志',
-      'Changelog': '更新日志',
-      'License': '许可证',
-      'Terms of Service': '服务条款',
-      'Privacy Policy': '隐私政策',
-      'Documentation': '文档',
-      'Help': '帮助',
-      'Support': '支持',
-      'Feedback': '反馈',
-      'Report a Bug': '报告问题',
-      'Feature Request': '功能建议',
-      
-      // ===== 通用操作 =====
-      'Save': '保存',
-      'Save Changes': '保存更改',
-      'Saving': '保存中',
-      'Saving...': '保存中...',
-      'Saved': '已保存',
-      'Cancel': '取消',
-      'Delete': '删除',
-      'Edit': '编辑',
-      'Create': '新建',
-      'New': '新建',
-      'Add': '添加',
-      'Remove': '移除',
-      'Close': '关闭',
-      'Confirm': '确认',
-      'Apply': '应用',
-      'OK': '确定',
-      'Yes': '是',
-      'No': '否',
-      'On': '开',
-      'Off': '关',
-      'Enable': '启用',
-      'Disable': '禁用',
-      'Enabled': '已启用',
-      'Disabled': '已禁用',
-      'Show': '显示',
-      'Hide': '隐藏',
-      'Search': '搜索',
-      'Filter': '筛选',
-      'Sort': '排序',
-      'Refresh': '刷新',
-      'Reload': '重新加载',
-      'Loading': '加载中',
-      'Loading...': '加载中...',
-      'Back': '返回',
-      'Next': '下一步',
-      'Previous': '上一步',
-      'Finish': '完成',
-      'Done': '完成',
-      'Skip': '跳过',
-      'Continue': '继续',
-      'Submit': '提交',
-      'Reset': '重置',
-      'Clear': '清除',
-      'Select': '选择',
-      'Select All': '全选',
-      'Deselect All': '取消全选',
-      'None': '无',
-      'All': '全部',
-      'Default': '默认',
-      'Custom': '自定义',
-      'More': '更多',
-      'Less': '更少',
-      'Options': '选项',
-      'Actions': '操作',
-      'View': '查看',
-      'Details': '详情',
-      'Info': '信息',
-      'Information': '信息',
-      'Warning': '警告',
-      'Error': '错误',
-      'Success': '成功',
-      'Failed': '失败',
-      'Pending': '待处理',
-      'Required': '必填',
-      'Optional': '可选',
-      
-      // ===== 登录相关 =====
-      'Sign in': '登录',
-      'Sign In': '登录',
-      'Sign out': '退出登录',
-      'Sign Out': '退出登录',
-      'Log in': '登录',
-      'Log In': '登录',
-      'Log out': '退出登录',
-      'Log Out': '退出登录',
-      'Sign in with GitHub': '使用 GitHub 登录',
-      'Sign in with GitLab': '使用 GitLab 登录',
-      'Sign in with Bitbucket': '使用 Bitbucket 登录',
-      'Sign in with your access token': '使用访问令牌登录',
-      'Access Token': '访问令牌',
-      'Token': '令牌',
-      'Enter your access token': '请输入访问令牌',
-      'Remember me': '记住我',
-      'Forgot password': '忘记密码',
-      'Forgot Password': '忘记密码',
-      
-      // ===== 内容管理 =====
-      'Contents': '内容',
-      'Content': '内容',
-      'Entries': '条目',
-      'Entry': '条目',
-      'New Entry': '新建条目',
-      'Edit Entry': '编辑条目',
-      'Delete Entry': '删除条目',
-      'Duplicate Entry': '复制条目',
-      'Draft': '草稿',
-      'Drafts': '草稿',
-      'Published': '已发布',
-      'Publish': '发布',
-      'Unpublish': '取消发布',
-      'Publish Now': '立即发布',
-      'Schedule': '定时发布',
-      'Scheduled': '已定时',
-      'In Review': '审核中',
-      'Ready': '待发布',
-      'Status': '状态',
-      'Title': '标题',
-      'Description': '描述',
-      'Body': '正文',
-      'Slug': '别名',
-      'Tags': '标签',
-      'Category': '分类',
-      'Categories': '分类',
-      'Author': '作者',
-      'Date': '日期',
-      'Created': '创建时间',
-      'Updated': '更新时间',
-      'Modified': '修改时间',
-      'Last Modified': '最后修改',
-      
-      // ===== 媒体库 =====
-      'Media': '媒体',
-      'Upload': '上传',
-      'Upload File': '上传文件',
-      'Upload Files': '上传文件',
-      'Upload Image': '上传图片',
-      'Choose File': '选择文件',
-      'Choose Files': '选择文件',
-      'Select File': '选择文件',
-      'Select Image': '选择图片',
-      'Drop files here': '将文件拖放到此处',
-      'Drag and drop files here': '将文件拖放到此处',
-      'or click to upload': '或点击上传',
-      'Browse': '浏览',
-      'File': '文件',
-      'Files': '文件',
-      'Image': '图片',
-      'Images': '图片',
-      'Video': '视频',
-      'Audio': '音频',
-      'Document': '文档',
-      'File Name': '文件名',
-      'File Size': '文件大小',
-      'File Type': '文件类型',
-      'Dimensions': '尺寸',
-      'Insert': '插入',
-      'Insert Selected': '插入所选',
-      'Delete Selected': '删除所选',
-      'No file selected': '未选择文件',
-      'No files found': '未找到文件',
-      'No images found': '未找到图片',
-      
-      // ===== 编辑器 =====
-      'Rich Text': '富文本',
-      'Markdown': 'Markdown',
-      'Raw': '原始文本',
-      'Code': '代码',
-      'Bold': '粗体',
-      'Italic': '斜体',
-      'Underline': '下划线',
-      'Strikethrough': '删除线',
-      'Heading': '标题',
-      'Heading 1': '一级标题',
-      'Heading 2': '二级标题',
-      'Heading 3': '三级标题',
-      'Heading 4': '四级标题',
-      'Heading 5': '五级标题',
-      'Heading 6': '六级标题',
-      'Paragraph': '段落',
-      'Quote': '引用',
-      'Blockquote': '引用块',
-      'Code Block': '代码块',
-      'Link': '链接',
-      'Insert Link': '插入链接',
-      'Edit Link': '编辑链接',
-      'Remove Link': '移除链接',
-      'URL': '链接地址',
-      'Link Text': '链接文本',
-      'Open in new tab': '在新标签页打开',
-      'Insert Image': '插入图片',
-      'Alt Text': '替代文本',
-      'Caption': '标题',
-      'Table': '表格',
-      'Insert Table': '插入表格',
-      'Add Row': '添加行',
-      'Add Column': '添加列',
-      'Delete Row': '删除行',
-      'Delete Column': '删除列',
-      'List': '列表',
-      'Bullet List': '无序列表',
-      'Numbered List': '有序列表',
-      'Ordered List': '有序列表',
-      'Unordered List': '无序列表',
-      'Check List': '任务列表',
-      'Task List': '任务列表',
-      'Indent': '增加缩进',
-      'Outdent': '减少缩进',
-      'Align Left': '左对齐',
-      'Align Center': '居中对齐',
-      'Align Right': '右对齐',
-      'Align Justify': '两端对齐',
-      'Undo': '撤销',
-      'Redo': '重做',
-      'Copy': '复制',
-      'Cut': '剪切',
-      'Paste': '粘贴',
-      'Find': '查找',
-      'Replace': '替换',
-      'Find and Replace': '查找和替换',
-      'Fullscreen': '全屏',
-      'Exit Fullscreen': '退出全屏',
-      
-      // ===== 列表操作 =====
-      'Add Item': '添加项目',
-      'Remove Item': '移除项目',
-      'Move Up': '上移',
-      'Move Down': '下移',
-      'Collapse': '折叠',
-      'Expand': '展开',
-      'Collapse All': '全部折叠',
-      'Expand All': '全部展开',
-      'Reorder': '重新排序',
-      'Drag to reorder': '拖动以重新排序',
-      
-      // ===== 日期时间 =====
-      'Today': '今天',
-      'Yesterday': '昨天',
-      'Tomorrow': '明天',
-      'Now': '现在',
-      'Time': '时间',
-      'Date and Time': '日期和时间',
-      'Select Date': '选择日期',
-      'Select Time': '选择时间',
-      'Start Date': '开始日期',
-      'End Date': '结束日期',
-      'Start Time': '开始时间',
-      'End Time': '结束时间',
-      
-      // ===== 确认对话框 =====
-      'Are you sure?': '确定吗？',
-      'Confirm Delete': '确认删除',
-      'Confirm delete': '确认删除',
-      'Are you sure you want to delete this?': '确定要删除吗？',
-      'This action cannot be undone': '此操作无法撤销',
-      'This action cannot be undone.': '此操作无法撤销。',
-      'Unsaved Changes': '未保存的更改',
-      'You have unsaved changes': '您有未保存的更改',
-      'Discard Changes': '放弃更改',
-      'Discard changes?': '放弃更改？',
-      'Save and Close': '保存并关闭',
-      'Close without Saving': '不保存并关闭',
-      
-      // ===== 状态消息 =====
-      'Changes saved successfully': '更改已成功保存',
-      'Entry saved successfully': '条目已成功保存',
-      'Entry published successfully': '条目已成功发布',
-      'Entry deleted successfully': '条目已成功删除',
-      'Settings saved': '设置已保存',
-      'Settings saved successfully': '设置已成功保存',
-      'Error saving': '保存时出错',
-      'Error loading': '加载时出错',
-      'Error deleting': '删除时出错',
-      'Something went wrong': '出了点问题',
-      'Please try again': '请重试',
-      'No results found': '未找到结果',
-      'No entries found': '未找到条目',
-      
-      // ===== 其他 =====
-      'Name': '名称',
-      'Value': '值',
-      'Type': '类型',
-      'Size': '大小',
-      'Path': '路径',
-      'Folder': '文件夹',
-      'Source': '来源',
-      'Target': '目标',
-      'items': '项',
-      'item': '项',
-      'of': '/',
-      'page': '页',
-      'pages': '页',
-      'Showing': '显示',
-      'Total': '共',
-      'per page': '每页',
-      'Go to page': '跳转到页',
-      'First': '第一页',
-      'Last': '最后一页',
-      'Quick Add': '快速添加',
-      'Duplicate': '复制',
-      'Download': '下载',
-      'Export': '导出',
-      'Import': '导入',
-      'Print': '打印',
-      'Share': '分享',
-      'Copy Link': '复制链接',
-      'Link Copied': '链接已复制',
-      'Copied': '已复制',
-      'Copy to Clipboard': '复制到剪贴板'
-    };
-
-    // 汉化界面文本
-    const translateUI = () => {
-      // 翻译文本节点
-      const walker = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-      );
-
-      const textNodes = [];
-      while (walker.nextNode()) {
-        textNodes.push(walker.currentNode);
-      }
-
-      textNodes.forEach(node => {
-        let text = node.textContent.trim();
-        
-        // 直接匹配
-        if (textMappings[text]) {
-          node.textContent = node.textContent.replace(text, textMappings[text]);
-          return;
-        }
-        
-        // 处理 "Signed In as xxx" 格式
-        if (text.toLowerCase().startsWith('signed in as ')) {
-          const username = text.substring(13);
-          node.textContent = node.textContent.replace(text, `已登录为 ${username}`);
-          return;
-        }
-      });
-
-      // 翻译元素属性
-      document.querySelectorAll('button, input, textarea, label, h1, h2, h3, h4, h5, h6, span, p, a, th, td, li, option, div, [role="button"], [role="menuitem"], [role="tab"], [role="option"]').forEach(el => {
-        // 翻译文本内容
-        if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
-          let text = el.textContent?.trim();
-          if (text && textMappings[text]) {
-            el.textContent = textMappings[text];
-          }
-          // 处理 "Signed In as xxx" 格式
-          if (text && text.toLowerCase().startsWith('signed in as ')) {
-            const username = text.substring(13);
-            el.textContent = `已登录为 ${username}`;
-          }
-        }
-        
-        // 翻译属性
-        ['aria-label', 'title', 'placeholder', 'alt'].forEach(attr => {
-          const value = el.getAttribute(attr);
-          if (value && textMappings[value]) {
-            el.setAttribute(attr, textMappings[value]);
+      // 验证 Token
+      try {
+        const response = await fetch('https://api.github.com/user', {
+          headers: {
+            'Authorization': `token ${token}`
           }
         });
-      });
-    };
-
-    // 隐藏 OAuth 按钮
-    const hideOAuthButton = () => {
-      document.querySelectorAll('button').forEach(btn => {
-        const text = btn.textContent?.toLowerCase() || '';
-        if ((text.includes('sign in with') || text.includes('github')) && 
-            !text.includes('token') && !text.includes('令牌') && !text.includes('访问')) {
-          btn.style.display = 'none';
+        
+        if (!response.ok) {
+          errorDiv.textContent = 'Token 无效，请检查后重试';
+          errorDiv.style.display = 'block';
+          return;
         }
-      });
-    };
-
-    // MutationObserver 监听 DOM 变化
-    const observer = new MutationObserver(() => {
-      hideOAuthButton();
-      translateUI();
-      
-      // 检测登录错误并添加刷新按钮
-      const errorMessages = document.querySelectorAll('[role="alert"], .error, [class*="error"]');
-      errorMessages.forEach(msg => {
-        const text = msg.textContent?.toLowerCase() || '';
-        if ((text.includes('error') || text.includes('错误') || text.includes('failed') || text.includes('失败')) && 
-            !msg.querySelector('.refresh-button')) {
-          const refreshBtn = document.createElement('button');
-          refreshBtn.className = 'refresh-button';
-          refreshBtn.textContent = '刷新页面重试';
-          refreshBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;';
-          refreshBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
-          };
-          msg.appendChild(refreshBtn);
-        }
-      });
-      
-      // 同时修改已存在的刷新按钮
-      document.querySelectorAll('button').forEach(btn => {
-        const text = btn.textContent?.trim() || '';
-        if (text.includes('刷新') || text.includes('重试') || text.includes('Retry')) {
-          btn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
-          };
-        }
-      });
-    });
-
-    // 页面加载后开始观察
-    document.addEventListener('DOMContentLoaded', () => {
-      observer.observe(document.body, { childList: true, subtree: true });
-      [500, 1000, 2000, 3000, 5000].forEach(delay => {
-        setTimeout(() => { hideOAuthButton(); translateUI(); }, delay);
-      });
+        
+        // Token 有效，保存并加载 CMS
+        localStorage.setItem('netlifycms-github-token', token);
+        successDiv.textContent = '✓ 登录成功！正在加载管理系统...';
+        successDiv.style.display = 'block';
+        
+        // 隐藏登录面板，显示 CMS
+        setTimeout(() => {
+          document.getElementById('quick-login-panel').style.display = 'none';
+          document.getElementById('cms-container').style.display = 'block';
+          
+          // 触发 CMS 加载
+          window.location.reload();
+        }, 1000);
+        
+      } catch (error) {
+        errorDiv.textContent = '网络错误：' + error.message;
+        errorDiv.style.display = 'block';
+      }
+    }
+    
+    // 检查是否已登录
+    window.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('netlifycms-github-token');
+      if (token) {
+        // 已有 Token，直接显示 CMS
+        document.getElementById('quick-login-panel').style.display = 'none';
+        document.getElementById('cms-container').style.display = 'block';
+      }
     });
     
-    // 监听登录失败事件
-    window.addEventListener('error', (e) => {
-      console.error('登录错误:', e);
-      // 3秒后自动启用刷新功能
-      setTimeout(() => {
-        const loginForm = document.querySelector('form, [role="form"]');
-        if (loginForm && !document.querySelector('.auto-refresh-hint')) {
-          const hint = document.createElement('div');
-          hint.className = 'auto-refresh-hint';
-          hint.textContent = '如果无法登录，请刷新页面重试';
-          hint.style.cssText = 'margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; color: #856404; text-align: center;';
-          loginForm.appendChild(hint);
-        }
-      }, 3000);
+    // 监听回车键
+    document.getElementById('token-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        loginWithToken();
+      }
     });
   </script>
 </body>
