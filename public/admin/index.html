@@ -17,42 +17,180 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
-    // 立即添加刷新按钮
+    // 密码登录功能
     (function() {
-      const addButton = () => {
-        // 避免重复添加
-        if (document.getElementById('refresh-btn')) return;
-        
-        const btn = document.createElement('button');
-        btn.id = 'refresh-btn';
-        btn.innerHTML = '🔄 刷新页面';
-        btn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 99999; padding: 12px 24px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-        
-        btn.addEventListener('click', function() {
-          // 清除所有存储
-          try { localStorage.clear(); } catch(e) {}
-          try { sessionStorage.clear(); } catch(e) {}
+      // 配置：密码和对应的 Token（请修改为你自己的）
+      const PASSWORD_CONFIG = {
+        // 密码的 SHA-256 哈希值（这里是 "admin123" 的哈希）
+        passwordHash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+        // 对应的 GitHub Token（请替换为你的实际 Token）
+        token: 'YOUR_GITHUB_TOKEN_HERE'
+      };
+
+      // SHA-256 哈希函数
+      async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hash))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+      }
+
+      // 添加密码登录界面
+      function addPasswordLogin() {
+        // 查找 Token 输入框
+        const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i], input[placeholder*="令牌" i]');
+        if (!tokenInput || document.getElementById('password-login-box')) return;
+
+        const loginForm = tokenInput.closest('form') || tokenInput.parentElement;
+        if (!loginForm) return;
+
+        // 创建密码登录区域
+        const passwordBox = document.createElement('div');
+        passwordBox.id = 'password-login-box';
+        passwordBox.style.cssText = 'margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;';
+        passwordBox.innerHTML = `
+          <div style="margin-bottom: 10px; font-size: 14px; color: #666; text-align: center;">
+            或使用密码快速登录
+          </div>
+          <input type="password" id="quick-password" placeholder="输入管理密码" 
+                 style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
+          <button type="button" id="password-login-btn" 
+                  style="width: 100%; margin-top: 10px; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;">
+            使用密码登录
+          </button>
+          <div id="password-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
+        `;
+
+        // 插入到表单中
+        loginForm.appendChild(passwordBox);
+
+        // 绑定事件
+        const quickPasswordInput = document.getElementById('quick-password');
+        const passwordLoginBtn = document.getElementById('password-login-btn');
+        const passwordError = document.getElementById('password-error');
+
+        async function handlePasswordLogin() {
+          const password = quickPasswordInput.value.trim();
+          
+          if (!password) {
+            passwordError.textContent = '请输入密码';
+            passwordError.style.display = 'block';
+            return;
+          }
+
+          passwordLoginBtn.textContent = '验证中...';
+          passwordLoginBtn.disabled = true;
+
           try {
-            document.cookie.split(";").forEach(c => {
-              document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/");
-            });
-          } catch(e) {}
-          // 刷新页面
-          window.location.reload(true);
+            const hash = await hashPassword(password);
+            
+            if (hash === PASSWORD_CONFIG.passwordHash) {
+              // 密码正确，自动填充 Token
+              tokenInput.value = PASSWORD_CONFIG.token;
+              passwordError.style.display = 'none';
+              passwordLoginBtn.textContent = '✓ 密码正确，正在登录...';
+              passwordLoginBtn.style.background = '#28a745';
+              
+              // 触发 Token 输入框的变化事件
+              tokenInput.dispatchEvent(new Event('input', { bubbles: true }));
+              tokenInput.dispatchEvent(new Event('change', { bubbles: true }));
+              
+              // 查找并点击登录按钮
+              setTimeout(() => {
+                const submitBtn = loginForm.querySelector('button[type="submit"], button:not([type])');
+                if (submitBtn) {
+                  submitBtn.click();
+                }
+              }, 500);
+            } else {
+              passwordError.textContent = '密码错误，请重试';
+              passwordError.style.display = 'block';
+              passwordLoginBtn.textContent = '使用密码登录';
+              passwordLoginBtn.disabled = false;
+              quickPasswordInput.value = '';
+            }
+          } catch (error) {
+            passwordError.textContent = '登录失败，请重试';
+            passwordError.style.display = 'block';
+            passwordLoginBtn.textContent = '使用密码登录';
+            passwordLoginBtn.disabled = false;
+          }
+        }
+
+        passwordLoginBtn.addEventListener('click', handlePasswordLogin);
+        quickPasswordInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handlePasswordLogin();
+          }
         });
-        
-        document.body.appendChild(btn);
+      }
+
+      // 持续尝试添加密码登录
+      const checkInterval = setInterval(() => {
+        addPasswordLogin();
+      }, 500);
+
+      // 30秒后停止检查
+      setTimeout(() => clearInterval(checkInterval), 30000);
+    })();
+
+    // 添加刷新页面按钮到页面
+    const addLogoutButton = () => {
+      if (document.querySelector('.logout-btn-container')) return;
+      
+      const container = document.createElement('div');
+      container.className = 'logout-btn-container';
+      container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999;';
+      
+      // 刷新页面按钮（清除登录状态）
+      const logoutBtn = document.createElement('button');
+      logoutBtn.className = 'logout-btn';
+      logoutBtn.textContent = '🔄 刷新页面';
+      logoutBtn.style.cssText = 'padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s; white-space: nowrap;';
+      logoutBtn.onmouseover = () => {
+        logoutBtn.style.background = '#c82333';
+        logoutBtn.style.transform = 'translateY(-2px)';
+        logoutBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+      };
+      logoutBtn.onmouseout = () => {
+        logoutBtn.style.background = '#dc3545';
+        logoutBtn.style.transform = 'translateY(0)';
+        logoutBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+      };
+      logoutBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 清除所有本地存储
+        localStorage.clear();
+        sessionStorage.clear();
+        // 清除所有 cookies
+        document.cookie.split(";").forEach(c => {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        // 强制刷新回到登录页
+        window.location.href = window.location.pathname + '?t=' + Date.now();
       };
       
-      // 多次尝试添加按钮
-      addButton();
-      setTimeout(addButton, 100);
-      setTimeout(addButton, 500);
-      setTimeout(addButton, 1000);
-      
-      // 持续检查
-      setInterval(addButton, 2000);
-    })();
+      container.appendChild(logoutBtn);
+      document.body.appendChild(container);
+    };
+
+    // 页面加载后立即添加退出登录按钮
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', addLogoutButton);
+    } else {
+      addLogoutButton();
+    }
+    
+    // 确保按钮始终存在
+    setInterval(() => {
+      if (!document.querySelector('.logout-btn-container')) {
+        addLogoutButton();
+      }
+    }, 1000);
 
     // Sveltia CMS 完整中文汉化
     const textMappings = {
