@@ -17,11 +17,11 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
-    // 智能登录系统 - 支持 Token 和密码登录
+    // 云端密码登录系统 - 使用 GitHub Gist 存储
     (function() {
-      const STORAGE_KEY = 'cms_encrypted_token';
-      const PASSWORD_KEY = 'cms_password_hash';
-
+      const GIST_ID_KEY = 'cms_gist_id';
+      const GITHUB_TOKEN_KEY = 'cms_github_token';
+      
       // 加密函数
       async function encrypt(text, password) {
         const encoder = new TextEncoder();
@@ -59,85 +59,136 @@
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
       }
 
-      // 添加密码登录界面
+      // 创建或更新 Gist
+      async function saveToGist(token, password, encryptedToken) {
+        const passwordHash = await hash(password);
+        const gistData = {
+          encryptedToken,
+          passwordHash,
+          updatedAt: new Date().toISOString()
+        };
+
+        const gistId = localStorage.getItem(GIST_ID_KEY);
+        const url = gistId 
+          ? `https://api.github.com/gists/${gistId}`
+          : 'https://api.github.com/gists';
+        
+        const method = gistId ? 'PATCH' : 'POST';
+        
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            description: 'CMS Login Data (Encrypted)',
+            public: false,
+            files: {
+              'cms-login.json': {
+                content: JSON.stringify(gistData, null, 2)
+              }
+            }
+          })
+        });
+
+        if (!response.ok) throw new Error('Failed to save to Gist');
+        
+        const result = await response.json();
+        if (!gistId) {
+          localStorage.setItem(GIST_ID_KEY, result.id);
+        }
+        return result.id;
+      }
+
+      // 从 Gist 读取
+      async function loadFromGist(gistId) {
+        const response = await fetch(`https://api.github.com/gists/${gistId}`);
+        if (!response.ok) return null;
+        
+        const gist = await response.json();
+        const file = gist.files['cms-login.json'];
+        if (!file) return null;
+        
+        return JSON.parse(file.content);
+      }
+
+      // 添加登录界面
       function addPasswordLogin() {
         const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i], input[placeholder*="令牌" i]');
-        if (!tokenInput || document.getElementById('smart-login-box')) return;
+        if (!tokenInput || document.getElementById('cloud-login-box')) return;
 
         const loginForm = tokenInput.closest('form') || tokenInput.parentElement;
         if (!loginForm) return;
 
-        const hasStoredToken = !!localStorage.getItem(STORAGE_KEY);
-        const hasPassword = !!localStorage.getItem(PASSWORD_KEY);
+        const gistId = localStorage.getItem(GIST_ID_KEY);
 
-        // 创建智能登录区域
-        const smartBox = document.createElement('div');
-        smartBox.id = 'smart-login-box';
-        smartBox.style.cssText = 'margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;';
+        const cloudBox = document.createElement('div');
+        cloudBox.id = 'cloud-login-box';
+        cloudBox.style.cssText = 'margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;';
         
-        if (hasStoredToken && hasPassword) {
-          // 已设置密码，显示密码登录
-          smartBox.innerHTML = `
+        if (gistId) {
+          // 已设置云端密码
+          cloudBox.innerHTML = `
             <div style="margin-bottom: 10px; font-size: 14px; color: #28a745; text-align: center; font-weight: bold;">
-              ✓ 已保存登录信息，使用密码快速登录
+              ☁️ 云端密码登录（任何设备可用）
             </div>
-            <input type="password" id="quick-password" placeholder="输入您设置的密码" 
+            <input type="password" id="cloud-password" placeholder="输入您的密码" 
                    style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
-            <button type="button" id="password-login-btn" 
+            <button type="button" id="cloud-login-btn" 
                     style="width: 100%; margin-top: 10px; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;">
               使用密码登录
             </button>
-            <button type="button" id="clear-data-btn" 
+            <button type="button" id="reset-cloud-btn" 
                     style="width: 100%; margin-top: 8px; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-              清除保存的数据
+              重置云端数据
             </button>
-            <div id="login-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
+            <div id="cloud-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
           `;
         } else {
-          // 首次使用，提示设置密码
-          smartBox.innerHTML = `
+          // 首次使用
+          cloudBox.innerHTML = `
             <div style="margin-bottom: 10px; font-size: 14px; color: #666; text-align: center;">
-              💡 首次登录后可设置密码，下次快速登录
+              💡 设置云端密码，任何设备都能快速登录
             </div>
-            <div id="setup-password-area" style="display: none; margin-top: 15px; padding: 15px; background: white; border-radius: 4px; border: 1px solid #28a745;">
+            <div id="setup-cloud-area" style="display: none; margin-top: 15px; padding: 15px; background: white; border-radius: 4px; border: 1px solid #28a745;">
               <div style="font-size: 14px; color: #28a745; margin-bottom: 10px; font-weight: bold; text-align: center;">
-                ✓ 登录成功！设置密码以便下次快速登录
+                ✓ 登录成功！设置云端密码
               </div>
-              <input type="password" id="new-password" placeholder="设置密码（至少6位）" 
+              <input type="password" id="cloud-new-password" placeholder="设置密码（至少6位）" 
                      style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box; margin-bottom: 8px;" />
-              <input type="password" id="confirm-password" placeholder="确认密码" 
+              <input type="password" id="cloud-confirm-password" placeholder="确认密码" 
                      style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
-              <button type="button" id="save-password-btn" 
+              <button type="button" id="save-cloud-btn" 
                       style="width: 100%; margin-top: 10px; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold;">
-                保存密码
+                保存到云端
               </button>
-              <button type="button" id="skip-password-btn" 
+              <button type="button" id="skip-cloud-btn" 
                       style="width: 100%; margin-top: 8px; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
                 跳过
               </button>
-              <div id="setup-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
+              <div id="cloud-setup-error" style="color: #dc3545; font-size: 12px; margin-top: 8px; display: none; text-align: center;"></div>
             </div>
           `;
         }
 
-        loginForm.appendChild(smartBox);
+        loginForm.appendChild(cloudBox);
 
-        // 绑定事件
-        if (hasStoredToken && hasPassword) {
-          setupPasswordLogin();
+        if (gistId) {
+          setupCloudLogin();
         } else {
-          setupFirstTimeLogin(tokenInput, loginForm);
+          setupFirstTimeCloudLogin(tokenInput);
         }
       }
 
-      // 密码登录逻辑
-      function setupPasswordLogin() {
-        const passwordInput = document.getElementById('quick-password');
-        const loginBtn = document.getElementById('password-login-btn');
-        const clearBtn = document.getElementById('clear-data-btn');
-        const errorDiv = document.getElementById('login-error');
+      // 云端密码登录
+      function setupCloudLogin() {
+        const passwordInput = document.getElementById('cloud-password');
+        const loginBtn = document.getElementById('cloud-login-btn');
+        const resetBtn = document.getElementById('reset-cloud-btn');
+        const errorDiv = document.getElementById('cloud-error');
 
-        async function handlePasswordLogin() {
+        async function handleCloudLogin() {
           const password = passwordInput.value.trim();
           
           if (!password) {
@@ -149,89 +200,100 @@
           loginBtn.textContent = '验证中...';
           loginBtn.disabled = true;
 
-          const passwordHash = await hash(password);
-          const storedHash = localStorage.getItem(PASSWORD_KEY);
-
-          if (passwordHash === storedHash) {
-            const encryptedToken = localStorage.getItem(STORAGE_KEY);
-            const token = await decrypt(encryptedToken, password);
-
-            if (token) {
-              const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i]');
-              if (tokenInput) {
-                tokenInput.value = token;
-                tokenInput.dispatchEvent(new Event('input', { bubbles: true }));
-                tokenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                
-                errorDiv.style.display = 'none';
-                loginBtn.textContent = '✓ 登录中...';
-                loginBtn.style.background = '#28a745';
-
-                setTimeout(() => {
-                  const submitBtn = document.querySelector('button[type="submit"]');
-                  if (submitBtn) submitBtn.click();
-                }, 300);
-              }
-            } else {
-              errorDiv.textContent = '数据解密失败，请清除数据重新设置';
+          try {
+            const gistId = localStorage.getItem(GIST_ID_KEY);
+            const gistData = await loadFromGist(gistId);
+            
+            if (!gistData) {
+              errorDiv.textContent = '云端数据加载失败';
               errorDiv.style.display = 'block';
               loginBtn.textContent = '使用密码登录';
               loginBtn.disabled = false;
+              return;
             }
-          } else {
-            errorDiv.textContent = '密码错误';
+
+            const passwordHash = await hash(password);
+            
+            if (passwordHash === gistData.passwordHash) {
+              const token = await decrypt(gistData.encryptedToken, password);
+              
+              if (token) {
+                const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i]');
+                if (tokenInput) {
+                  tokenInput.value = token;
+                  tokenInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  tokenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  
+                  errorDiv.style.display = 'none';
+                  loginBtn.textContent = '✓ 登录中...';
+                  loginBtn.style.background = '#28a745';
+
+                  setTimeout(() => {
+                    const submitBtn = document.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.click();
+                  }, 300);
+                }
+              } else {
+                errorDiv.textContent = '数据解密失败';
+                errorDiv.style.display = 'block';
+                loginBtn.textContent = '使用密码登录';
+                loginBtn.disabled = false;
+              }
+            } else {
+              errorDiv.textContent = '密码错误';
+              errorDiv.style.display = 'block';
+              loginBtn.textContent = '使用密码登录';
+              loginBtn.disabled = false;
+              passwordInput.value = '';
+            }
+          } catch (error) {
+            errorDiv.textContent = '登录失败: ' + error.message;
             errorDiv.style.display = 'block';
             loginBtn.textContent = '使用密码登录';
             loginBtn.disabled = false;
-            passwordInput.value = '';
           }
         }
 
-        loginBtn.addEventListener('click', handlePasswordLogin);
+        loginBtn.addEventListener('click', handleCloudLogin);
         passwordInput.addEventListener('keypress', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
-            handlePasswordLogin();
+            handleCloudLogin();
           }
         });
 
-        clearBtn.addEventListener('click', () => {
-          if (confirm('确定要清除保存的登录数据吗？下次需要重新设置密码。')) {
-            localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem(PASSWORD_KEY);
+        resetBtn.addEventListener('click', () => {
+          if (confirm('确定要重置云端数据吗？需要重新设置密码。')) {
+            localStorage.removeItem(GIST_ID_KEY);
             location.reload();
           }
         });
       }
 
-      // 首次登录逻辑
-      function setupFirstTimeLogin(tokenInput, loginForm) {
-        // 监听登录成功
+      // 首次设置云端密码
+      function setupFirstTimeCloudLogin(tokenInput) {
         const observer = new MutationObserver(() => {
-          // 检测是否登录成功（页面内容变化）
           if (document.querySelector('[class*="dashboard"], [class*="content"], main')) {
-            const setupArea = document.getElementById('setup-password-area');
+            const setupArea = document.getElementById('setup-cloud-area');
             if (setupArea && tokenInput.value) {
               setupArea.style.display = 'block';
-              setupPasswordSaving(tokenInput.value);
+              setupCloudPasswordSaving(tokenInput.value);
               observer.disconnect();
             }
           }
         });
 
         observer.observe(document.body, { childList: true, subtree: true });
-
-        // 30秒后停止监听
         setTimeout(() => observer.disconnect(), 30000);
       }
 
-      // 设置密码保存
-      function setupPasswordSaving(token) {
-        const newPasswordInput = document.getElementById('new-password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
-        const saveBtn = document.getElementById('save-password-btn');
-        const skipBtn = document.getElementById('skip-password-btn');
-        const errorDiv = document.getElementById('setup-error');
+      // 保存到云端
+      function setupCloudPasswordSaving(token) {
+        const newPasswordInput = document.getElementById('cloud-new-password');
+        const confirmPasswordInput = document.getElementById('cloud-confirm-password');
+        const saveBtn = document.getElementById('save-cloud-btn');
+        const skipBtn = document.getElementById('skip-cloud-btn');
+        const errorDiv = document.getElementById('cloud-setup-error');
 
         async function savePassword() {
           const newPassword = newPasswordInput.value.trim();
@@ -260,37 +322,27 @@
 
           try {
             const encryptedToken = await encrypt(token, newPassword);
-            const passwordHash = await hash(newPassword);
-
-            localStorage.setItem(STORAGE_KEY, encryptedToken);
-            localStorage.setItem(PASSWORD_KEY, passwordHash);
+            await saveToGist(token, newPassword, encryptedToken);
 
             errorDiv.style.display = 'none';
             saveBtn.textContent = '✓ 保存成功';
             saveBtn.style.background = '#28a745';
 
             setTimeout(() => {
-              document.getElementById('setup-password-area').innerHTML = 
-                '<div style="color: #28a745; text-align: center; padding: 20px;">✓ 密码已保存，下次可以快速登录</div>';
+              document.getElementById('setup-cloud-area').innerHTML = 
+                '<div style="color: #28a745; text-align: center; padding: 20px;">✓ 密码已保存到云端，任何设备都能使用</div>';
             }, 1000);
           } catch (error) {
-            errorDiv.textContent = '保存失败，请重试';
+            errorDiv.textContent = '保存失败: ' + error.message;
             errorDiv.style.display = 'block';
-            saveBtn.textContent = '保存密码';
+            saveBtn.textContent = '保存到云端';
             saveBtn.disabled = false;
           }
         }
 
         saveBtn.addEventListener('click', savePassword);
         skipBtn.addEventListener('click', () => {
-          document.getElementById('setup-password-area').style.display = 'none';
-        });
-
-        newPasswordInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            confirmPasswordInput.focus();
-          }
+          document.getElementById('setup-cloud-area').style.display = 'none';
         });
 
         confirmPasswordInput.addEventListener('keypress', (e) => {
@@ -301,7 +353,6 @@
         });
       }
 
-      // 持续尝试添加登录界面
       const checkInterval = setInterval(addPasswordLogin, 500);
       setTimeout(() => clearInterval(checkInterval), 30000);
     })();
