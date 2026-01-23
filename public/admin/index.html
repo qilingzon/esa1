@@ -17,6 +17,78 @@
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   <script>
+    // 一键创建 Token 功能
+    (function() {
+      function addQuickTokenButton() {
+        const tokenInput = document.querySelector('input[type="password"], input[placeholder*="token" i], input[placeholder*="令牌" i]');
+        if (!tokenInput || document.getElementById('quick-token-box')) return;
+
+        const loginForm = tokenInput.closest('form') || tokenInput.parentElement;
+        if (!loginForm) return;
+
+        const quickBox = document.createElement('div');
+        quickBox.id = 'quick-token-box';
+        quickBox.style.cssText = 'margin-bottom: 15px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; color: white;';
+        quickBox.innerHTML = `
+          <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center;">
+            🚀 首次使用？一键创建 Token
+          </div>
+          <div style="font-size: 13px; margin-bottom: 12px; text-align: center; opacity: 0.9;">
+            点击下方按钮，我们会帮你打开配置好的页面
+          </div>
+          <button type="button" id="create-token-btn" 
+                  style="width: 100%; padding: 12px; background: white; color: #667eea; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+            📝 打开 GitHub 创建 Token
+          </button>
+          <div id="token-steps" style="display: none; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 4px; font-size: 12px; margin-top: 10px;">
+            <div style="font-weight: bold; margin-bottom: 8px;">📋 简单3步：</div>
+            <div style="margin-bottom: 4px;">1️⃣ 在打开的页面中，Note 填写：<code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">Blog CMS</code></div>
+            <div style="margin-bottom: 4px;">2️⃣ 勾选权限：<code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">repo</code> 和 <code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px;">gist</code></div>
+            <div style="margin-bottom: 4px;">3️⃣ 点击底部绿色按钮生成，然后复制 Token 粘贴到上方输入框</div>
+          </div>
+          <button type="button" id="show-steps-btn" 
+                  style="width: 100%; padding: 8px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+            查看详细步骤 ▼
+          </button>
+        `;
+
+        loginForm.insertBefore(quickBox, tokenInput.parentElement);
+
+        // 打开 Token 创建页面
+        document.getElementById('create-token-btn').addEventListener('click', () => {
+          // 打开预配置的 Token 创建页面
+          const tokenUrl = 'https://github.com/settings/tokens/new?' + new URLSearchParams({
+            description: 'Blog CMS - ' + new Date().toLocaleDateString(),
+            scopes: 'repo,gist'
+          }).toString();
+          
+          window.open(tokenUrl, '_blank');
+          
+          // 显示步骤
+          document.getElementById('token-steps').style.display = 'block';
+          document.getElementById('show-steps-btn').style.display = 'none';
+          document.getElementById('create-token-btn').textContent = '✓ 已打开页面，请在新窗口中操作';
+          document.getElementById('create-token-btn').style.background = '#28a745';
+          document.getElementById('create-token-btn').style.color = 'white';
+        });
+
+        // 显示/隐藏步骤
+        document.getElementById('show-steps-btn').addEventListener('click', function() {
+          const steps = document.getElementById('token-steps');
+          if (steps.style.display === 'none') {
+            steps.style.display = 'block';
+            this.textContent = '隐藏步骤 ▲';
+          } else {
+            steps.style.display = 'none';
+            this.textContent = '查看详细步骤 ▼';
+          }
+        });
+      }
+
+      const checkInterval = setInterval(addQuickTokenButton, 500);
+      setTimeout(() => clearInterval(checkInterval), 10000);
+    })();
+
     // 云端密码登录系统 - 使用 GitHub Gist 存储
     (function() {
       const GIST_ID_KEY = 'cms_gist_id';
