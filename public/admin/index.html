@@ -155,8 +155,23 @@
       // 持续检查，直到成功添加
       let attempts = 0;
       const maxAttempts = 120; // 60秒
+      let lastInputCount = 0;
+      
       const checkInterval = setInterval(() => {
         attempts++;
+        
+        // 每10次尝试，输出页面上所有输入框的信息
+        if (attempts % 10 === 0) {
+          const allInputs = document.querySelectorAll('input');
+          if (allInputs.length !== lastInputCount) {
+            console.log(`📊 页面上共有 ${allInputs.length} 个输入框`);
+            allInputs.forEach((input, i) => {
+              console.log(`  输入框 ${i+1}: type="${input.type}", placeholder="${input.placeholder}", name="${input.name}", id="${input.id}"`);
+            });
+            lastInputCount = allInputs.length;
+          }
+        }
+        
         console.log(`🔄 尝试添加一键创建按钮 (${attempts}/${maxAttempts})`);
         addQuickTokenButton();
         
@@ -532,6 +547,7 @@
       // 持续检查，直到成功添加
       let attempts = 0;
       const maxAttempts = 120; // 60秒
+      
       const checkInterval = setInterval(() => {
         attempts++;
         console.log(`🔄 尝试添加密码登录 (${attempts}/${maxAttempts})`);
