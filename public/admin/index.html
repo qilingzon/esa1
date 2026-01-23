@@ -39,6 +39,29 @@
       console.log('✅ 调试面板已启动');
       console.log('📍 当前 URL:', window.location.href);
       console.log('🌐 User Agent:', navigator.userAgent.substring(0, 50) + '...');
+      
+      // 每秒检查页面状态
+      let checkCount = 0;
+      const statusCheck = setInterval(() => {
+        checkCount++;
+        const inputs = document.querySelectorAll('input');
+        const buttons = document.querySelectorAll('button');
+        const bodyLength = document.body.innerHTML.length;
+        
+        console.log(`📊 [${checkCount}s] 输入框:${inputs.length} 按钮:${buttons.length} 页面大小:${bodyLength}字符`);
+        
+        if (inputs.length > 0) {
+          console.log('🎉 发现输入框！');
+          inputs.forEach((input, i) => {
+            console.log(`  输入框${i+1}: type="${input.type}" placeholder="${input.placeholder}" name="${input.name}"`);
+          });
+        }
+        
+        if (checkCount >= 60) {
+          console.log('⏱️ 停止状态检查');
+          clearInterval(statusCheck);
+        }
+      }, 1000);
     })();
     
     // 兼容跟踪保护的存储方案
